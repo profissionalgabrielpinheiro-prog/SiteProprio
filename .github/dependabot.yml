@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Dependências Python (os .txt têm hash: o Dependabot atualiza versão e hash juntos).
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencias, seguranca]
+
+  # Actions da CI (travadas por hash: o Dependabot troca o hash ao subir de versão).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencias, seguranca]

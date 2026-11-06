@@ -1,0 +1,8 @@
+# Todo PR precisa da revisão do dono. Com "Require review from Code Owners" ligado na proteção
+# da branch main, ninguém altera estes caminhos sem aprovação.
+*                       @profissionalgabrielpinheiro-prog
+/.github/               @profissionalgabrielpinheiro-prog
+/cupons/seguranca.py    @profissionalgabrielpinheiro-prog
+/scripts/               @profissionalgabrielpinheiro-prog
+/.gitignore             @profissionalgabrielpinheiro-prog
+/requirements*.txt      @profissionalgabrielpinheiro-prog

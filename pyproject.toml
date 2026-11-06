@@ -1,0 +1,41 @@
+[project]
+name = "cupons-loja"
+version = "1.0.0"
+description = "Análise de cupons: venda casada mãe x complementar e encarte (uso interno)"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = ["pandas>=3.0,<4", "numpy>=2.0,<3", "openpyxl>=3.1,<4", "defusedxml>=0.7,<1"]
+
+[tool.setuptools.packages.find]
+include = ["cupons*"]
+
+[tool.setuptools.package-data]
+cupons = ["templates/*.html"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = [".venv", "dados", "site"]
+
+[tool.ruff.lint]
+# E/F/W: erros e estilo · B: bugs prováveis · S: segurança (bandit) · UP: sintaxe moderna
+select = ["E", "F", "W", "B", "S", "UP"]
+ignore = [
+    "E501",           # tamanho de linha: mensagens longas em português; o formatador não é o foco
+    "E702", "E701",   # várias instruções por linha: usado de propósito em trechos curtos de cálculo
+    "E741",           # nomes curtos (l, k) em compreensões de lista
+    "S101",           # assert: usado para travas de invariantes do pipeline
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B011"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "tests"]
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = ["navegador: precisa de Edge/Chrome headless (ataque XSS no site gerado)"]
+
+[tool.bandit]
+exclude_dirs = [".venv", "tests", "dados", "site"]

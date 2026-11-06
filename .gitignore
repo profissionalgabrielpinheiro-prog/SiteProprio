@@ -1,0 +1,55 @@
+# =====================================================================================
+# DADOS DA EMPRESA - NUNCA VERSIONAR (vendas, margens, custos, cupons).
+# Tudo em dados/ fica de fora, exceto o README e a pasta vazia de entrada.
+# =====================================================================================
+dados/*
+!dados/README.md
+!dados/entrada/
+dados/entrada/*
+!dados/entrada/.gitkeep
+
+# O site gerado embute vendas e margens: nunca publicar nem versionar.
+site/
+
+# Formatos que carregam dados de negócio
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.parquet
+*.pbix
+*.pbit
+*.zip
+*.7z
+
+# --- segredos e configuração local ---
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+credentials*
+secrets*
+config.local.toml
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# --- editor / sistema ---
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

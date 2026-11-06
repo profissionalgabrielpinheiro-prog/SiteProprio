@@ -1,0 +1,9 @@
+# Copie para config.local.toml (ele fica fora do Git) e ajuste. Variáveis de ambiente têm prioridade.
+# Nenhum caminho pessoal deve ser versionado.
+max_mb = 600                        # recusa arquivo de entrada maior que isso (proteção contra DoS)
+
+[caminhos]
+# dados     = "dados"               # CSVs de apoio exportados do Power BI
+# entrada   = "dados/entrada"       # exportações de cupons (.xlsx/.csv)
+# saida     = "site/index.html"     # precisa ficar DENTRO do projeto e terminar em .html
+# tipopreco = "dados/tipo_preco.csv"

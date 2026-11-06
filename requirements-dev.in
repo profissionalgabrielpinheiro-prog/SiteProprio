@@ -1,0 +1,7 @@
+# Ferramentas de desenvolvimento e segurança (não vão para produção).
+# Regerar:  pip-compile --generate-hashes --allow-unsafe -o requirements-dev.txt requirements-dev.in
+-c requirements.txt
+pytest>=8
+ruff>=0.6
+bandit>=1.7
+pip-audit>=2.7

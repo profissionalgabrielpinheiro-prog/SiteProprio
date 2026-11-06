@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Análise de Cupons · Mãe × Complementar</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f4f4f1; --surface:#fcfcfb; --surface-2:#f4f4f1; --ink:#0b0b0b; --ink-2:#52514e; --muted:#76746e;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.04);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --accent:#2a78d6; --on-accent:#fff;
+  --good:#006300; --bad:#c42f2f; --warn:#8a5a00;
+  --good-bg:rgba(12,163,12,.12); --bad-bg:rgba(208,59,59,.12); --warn-bg:rgba(250,178,25,.22); --info-bg:rgba(42,120,214,.10);
+  --shadow:0 1px 2px rgba(11,11,11,.05),0 4px 14px rgba(11,11,11,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#232321; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#9a988f;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.05);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --accent:#3987e5; --on-accent:#fff;
+    --good:#2bc02b; --bad:#e66767; --warn:#f0b43a;
+    --good-bg:rgba(12,163,12,.18); --bad-bg:rgba(230,103,103,.18); --warn-bg:rgba(250,178,25,.16); --info-bg:rgba(57,135,229,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#232321; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#9a988f;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.05);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --accent:#3987e5; --on-accent:#fff;
+  --good:#2bc02b; --bad:#e66767; --warn:#f0b43a;
+  --good-bg:rgba(12,163,12,.18); --bad-bg:rgba(230,103,103,.18); --warn-bg:rgba(250,178,25,.16); --info-bg:rgba(57,135,229,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+/* topo */
+.top{background:var(--surface);border-bottom:1px solid var(--border)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:700;flex:none}
+.brand h1{font-size:17px;font-weight:650;letter-spacing:-.01em}
+.brand p{color:var(--ink-2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 12px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-weight:500;color:var(--ink)}
+.btn:hover{background:var(--hover)}
+.btn:focus-visible,.chip:focus-visible,.tab:focus-visible,select:focus-visible,input:focus-visible,th[data-sort]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* abas */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tab{border:0;background:none;padding:13px 14px;cursor:pointer;color:var(--ink-2);font-weight:550;border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+/* filtros */
+.filters{background:var(--bg);padding:14px 0 4px}
+.filters .wrap{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg>label,.fg>span.l{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 11px;cursor:pointer;font-size:13px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip .pt{font-size:10.5px;font-weight:700;padding:0 5px;border-radius:4px;background:var(--warn-bg);color:var(--warn)}
+.chip[aria-pressed="true"] .pt{background:rgba(255,255,255,.25);color:#fff}
+select,input[type=search],input[type=number]{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 10px;min-width:170px;color:var(--ink)}
+input[type=range]{accent-color:var(--accent)}
+/* alerta */
+.alerta{margin:14px 0 0;border:1px solid var(--border);border-left:4px solid var(--bad);background:var(--bad-bg);border-radius:10px;padding:11px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.alerta b{font-weight:650}
+/* conteúdo */
+main{padding:6px 0 60px}
+.page{display:none}
+.page.on{display:block}
+.grid{display:grid;gap:14px;margin-top:14px}
+.g-kpi{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g-2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.g-3{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:14.5px;font-weight:650;letter-spacing:-.005em}
+.card .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px}
+.card .body{margin-top:12px}
+.kpi .lab{font-size:12px;color:var(--ink-2);font-weight:550}
+.kpi .val{font-size:27px;font-weight:650;letter-spacing:-.02em;margin-top:4px;line-height:1.15}
+.kpi .foot{font-size:12px;color:var(--muted);margin-top:4px;min-height:18px}
+.dl{font-weight:600;font-size:12px;white-space:nowrap}
+.dl.up{color:var(--good)} .dl.dn{color:var(--bad)} .dl.eq{color:var(--muted)}
+/* tabelas */
+.tw{overflow:auto;border:1px solid var(--border);border-radius:10px;max-height:560px}
+table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.t th{position:sticky;top:0;background:var(--surface-2);text-align:left;padding:9px 12px;font-weight:600;font-size:12px;color:var(--ink-2);border-bottom:1px solid var(--border);white-space:nowrap;z-index:1}
+.t th[data-sort]{cursor:pointer;user-select:none}
+.t th[data-sort]:hover{color:var(--ink)}
+.t td{padding:8px 12px;border-bottom:1px solid var(--grid);white-space:nowrap}
+.t tr:last-child td{border-bottom:0}
+.t tbody tr:hover td{background:var(--hover)}
+.t tr.sel td{background:var(--info-bg)}
+.t tr.clk{cursor:pointer}
+.t .r{text-align:right} .t th.r{text-align:right}
+.t tr.tot td{font-weight:650;background:var(--surface-2)}
+.t td.wrapc{white-space:normal;min-width:260px;color:var(--ink-2)}
+.t .nm{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--good-bg);color:var(--good)} .tag.bad{background:var(--bad-bg);color:var(--bad)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.info{background:var(--info-bg);color:var(--accent)} .tag.mut{background:var(--hover);color:var(--ink-2)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.empty{color:var(--muted);padding:18px;text-align:center}
+/* gráficos */
+svg text{font-family:inherit}
+svg .gl{stroke:var(--grid);stroke-width:1}
+svg .base{stroke:var(--axis);stroke-width:1}
+svg .ax{fill:var(--muted);font-size:11px}
+svg .vl{fill:var(--ink-2);font-size:11.5px;font-weight:600}
+svg .bar{fill:var(--s1)}
+svg .bar.parcial{stroke:var(--s1);stroke-width:1.5;stroke-dasharray:3 2}
+svg .ln{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+svg .pt{fill:var(--s1);stroke:var(--surface);stroke-width:2}
+svg .pt.parcial{fill:var(--surface);stroke:var(--s1);stroke-width:2}
+svg [data-tip]:hover .bar,svg [data-tip]:hover .pt{filter:brightness(1.12)}
+.hb{display:grid;grid-template-columns:minmax(90px,200px) 1fr auto;gap:10px;align-items:center;padding:4px 0}
+.hb .hl{font-size:12.5px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .ht{height:12px;background:var(--hover);border-radius:6px;overflow:hidden}
+.hb .ht i{display:block;height:100%;background:var(--s1);border-radius:0 4px 4px 0}
+.hb .hv{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.hb:hover .ht i{filter:brightness(1.12)}
+.hb.s2 .ht i{background:var(--s2)} .hb.s3 .ht i{background:var(--s3)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px;background:var(--s1)}
+.legend i.p{background:repeating-linear-gradient(45deg,var(--s1) 0 2px,transparent 2px 5px);border:1px solid var(--s1)}
+#tt{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.45;max-width:320px;white-space:pre-line;opacity:0;transition:opacity .08s;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+#tt b{display:block;margin-bottom:2px}
+/* técnica */
+.cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));margin-top:14px}
+.it{padding:12px 0;border-bottom:1px solid var(--grid)} .it:last-child{border-bottom:0;padding-bottom:0} .it:first-child{padding-top:0}
+.it h3{font-size:13.5px;font-weight:650;display:flex;gap:8px;align-items:center}
+.it p{color:var(--ink-2);margin-top:4px}
+.it .ev{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic}
+.ico{flex:none;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700}
+.ico.ok{background:var(--good-bg);color:var(--good)} .ico.aviso{background:var(--warn-bg);color:var(--warn)} .ico.erro{background:var(--bad-bg);color:var(--bad)}
+.ico.pro{background:var(--good-bg);color:var(--good)} .ico.con{background:var(--bad-bg);color:var(--bad)}
+.card ul{margin:8px 0 0;padding-left:18px;color:var(--ink-2)} .card li{margin:5px 0}
+code{background:var(--hover);padding:1px 6px;border-radius:5px;font-size:12.5px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.foot-page{margin-top:26px;color:var(--muted);font-size:12px}
+.mx td{text-align:right}.mx td:first-child,.mx th:first-child{text-align:left}
+.mx td.hit{background:var(--s1);color:#fff;font-weight:650}
+.mx td.ok{background:var(--info-bg)}
+.mx td.neg{color:var(--bad)}
+.mx tr.sel td.hit{background:var(--s1);color:#fff}
+.mx tr.sel td.ok{background:var(--info-bg)}
+.mx tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+@media (max-width:640px){.wrap{padding:0 14px}.kpi .val{font-size:23px}.brand p{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><div class="logo" aria-hidden="true">C</div><div><h1>Análise de Cupons · Mãe × Complementar</h1><p id="sub"></p></div></div>
+  <button class="btn" id="tema" type="button" aria-label="Alternar entre modo claro e escuro"><span id="tema-i">◐</span><span id="tema-t">Tema</span></button>
+</div></header>
+
+<nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist" id="tabs">
+  <button class="tab" role="tab" data-p="geral">Visão geral</button>
+  <button class="tab" role="tab" data-p="enc">Encarte</button>
+  <button class="tab" role="tab" data-p="prod">Produtos em encarte</button>
+  <button class="tab" role="tab" data-p="mae">Mãe × Complementar</button>
+  <button class="tab" role="tab" data-p="cat">Categorias</button>
+  <button class="tab" role="tab" data-p="cesta">Cestas e cupons</button>
+  <button class="tab" role="tab" data-p="tec">Análise técnica</button>
+</div></nav>
+
+<section class="filters" aria-label="Filtros"><div class="wrap">
+  <div class="fg"><span class="l">Dias</span><div class="chips" id="f-dias"></div></div>
+  <div class="fg" id="g-dep"><label for="f-dep">Departamento</label><select id="f-dep"></select></div>
+  <div class="fg" id="g-tip"><label for="f-tip">Tipo de produto</label><select id="f-tip"></select></div>
+  <div class="fg"><span class="l">&nbsp;</span><button class="btn" id="f-reset" type="button">Limpar filtros</button></div>
+</div></section>
+
+<main class="wrap">
+  <div id="alerta"></div>
+
+  <!-- VISÃO GERAL -->
+  <section class="page" id="p-geral">
+    <div class="grid g-kpi" id="k-geral"></div>
+    <div class="grid g-3">
+      <div class="card"><h2>Venda por dia</h2><p class="sub">R$ · dia parcial tracejado</p><div class="body" id="c-venda"></div></div>
+      <div class="card"><h2>Cupons por dia</h2><p class="sub">Quantidade de cupons</p><div class="body" id="c-cupons"></div></div>
+      <div class="card"><h2>Ticket médio por dia</h2><p class="sub">Venda ÷ cupons</p><div class="body" id="c-ticket"></div></div>
+    </div>
+    <div class="grid g-2">
+      <div class="card"><h2>Venda por departamento</h2><p class="sub">Top 10 no período selecionado</p><div class="body" id="c-dep"></div></div>
+      <div class="card"><h2>Venda por tipo de produto</h2><p class="sub">Padrão, complementar, impulso…</p><div class="body" id="c-tipo"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Tabela de variação geral</h2>
+      <p class="sub">Dia contra dia anterior. Respeita departamento e tipo; ignora o filtro de dias. Dias parciais ficam de fora das variações.</p>
+      <div class="body"><div class="tw" id="t-var"></div></div>
+      <p class="note" id="n-var"></p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Variação entre dois dias, por dimensão</h2>
+      <div class="row" style="margin-top:10px">
+        <div class="fg"><label for="v-by">Agrupar por</label><select id="v-by"><option value="dep">Departamento</option><option value="tip">Tipo de produto</option><option value="sec">Seção</option><option value="cat">Categoria</option></select></div>
+        <div class="fg"><label for="v-base">Dia base</label><select id="v-base"></select></div>
+        <div class="fg"><label for="v-comp">Dia comparado</label><select id="v-comp"></select></div>
+      </div>
+      <div class="body"><div class="tw" id="t-var2"></div></div>
+      <p class="note">Δ p.p. = variação da participação na venda do dia. Respeita o filtro de tipo de produto.</p>
+    </div>
+  </section>
+
+  <!-- ENCARTE -->
+  <section class="page" id="p-enc">
+    <div id="enc-aviso"></div>
+    <div class="grid g-kpi" id="k-enc"></div>
+    <div class="card" style="margin-top:14px">
+      <h2>Categorias mãe com produto em encarte</h2>
+      <p class="sub">O que a cesta de cada mãe já mostra hoje: quantos cupons levam algum complementar e quais complementares puxam venda.</p>
+      <div class="body"><div class="tw" id="t-encmae"></div></div>
+      <p class="note">“% levam complementar” é a venda casada atual (cupons de 26 a 30/10). É o ponto de partida para medir se o encarte mexe nela.</p>
+    </div>
+    <div id="enc-efeito"></div>
+  </section>
+
+  <!-- PRODUTOS EM ENCARTE -->
+  <section class="page" id="p-prod">
+    <div class="grid g-kpi" id="k-prod"></div>
+    <div class="grid g-2">
+      <div class="card"><h2>Maior esforço de volume</h2><p class="sub">Unidades por dia a mais para manter a margem total · top 10</p><div class="body" id="c-esforco"></div></div>
+      <div class="card"><h2>O volume necessário cabe no histórico?</h2><p class="sub">Compara com o p90 e o máximo diário do mês na loja 20</p><div class="body" id="c-viab"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Produtos em encarte: quanto vender a mais para manter a lucratividade</h2>
+      <p class="sub">Volume necessário = volume atual × margem unitária normal ÷ margem unitária com desconto. Clique numa linha para simular cenários.</p>
+      <div class="row" style="margin-top:10px">
+        <div class="fg"><label for="pr-papel">Papel</label><select id="pr-papel"><option value="">Todos</option><option value="M">Mãe</option><option value="C">Complementar</option><option value="-">Fora do mapa</option></select></div>
+        <div class="fg"><label for="pr-sit">Situação</label><select id="pr-sit"><option value="">Todas</option><option>plausível</option><option>exige pico</option><option>acima do histórico</option><option>sem histórico</option><option>abaixo do custo</option><option>preço divergente</option><option>sem desconto</option></select></div>
+        <div class="fg"><label for="pr-dep">Departamento</label><select id="pr-dep"></select></div>
+        <div class="fg"><label for="pr-busca">Buscar</label><input type="search" id="pr-busca" placeholder="Produto ou categoria"></div>
+      </div>
+      <div class="body"><div class="tw" id="t-prod"></div></div>
+      <p class="note" id="n-prod"></p>
+    </div>
+    <div class="card" style="margin-top:14px" id="sim">
+      <h2>Simulador: o desconto compensa?</h2>
+      <p class="sub" id="sim-sub">Escolha um produto na tabela ou digite os valores.</p>
+      <div class="row" style="margin-top:10px">
+        <div class="fg"><label for="sim-preco">Preço líquido (R$)</label><input type="number" id="sim-preco" step="0.01" min="0"></div>
+        <div class="fg"><label for="sim-custo">Custo variável (R$)</label><input type="number" id="sim-custo" step="0.01" min="0"></div>
+        <div class="fg"><label for="sim-vol">Volume atual (un/dia)</label><input type="number" id="sim-vol" step="0.1" min="0"></div>
+      </div>
+      <div class="body" id="sim-out"></div>
+    </div>
+  </section>
+
+  <!-- MÃE x COMPLEMENTAR -->
+  <section class="page" id="p-mae">
+    <div class="grid g-kpi" id="k-mae"></div>
+    <div class="grid g-2">
+      <div class="card"><h2>Oportunidade estimada por mãe</h2><p class="sub">Top 10 · R$ no período</p><div class="body" id="c-opp"></div>
+        <div class="row" style="margin-top:14px"><div class="fg" style="flex:1;min-width:220px"><label for="m-conv">Cenário: converter <b id="m-conv-v">10%</b> dos cupons sem complementar</label><input type="range" id="m-conv" min="1" max="50" value="10"></div></div>
+        <p class="note">Oportunidade = cupons com mãe sem complementar × % convertido × valor médio de complementar por cupom que já leva. É um cenário, não uma previsão.</p></div>
+      <div class="card"><h2>Taxa de complementar por mãe</h2><p class="sub">Top 10 mães por volume · % dos cupons com a mãe que levam algum complementar</p><div class="body" id="c-att"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Categorias mãe</h2><p class="sub">Clique em uma linha para ver as relações dela com os complementares.</p>
+      <div class="row" style="margin-top:10px">
+        <div class="fg"><label for="m-grupo">Grupo</label><select id="m-grupo"></select></div>
+        <div class="fg"><label for="m-busca">Buscar mãe</label><input type="search" id="m-busca" placeholder="Ex.: café"></div>
+      </div>
+      <div class="body"><div class="tw" id="t-mae"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2 id="h-par">Relações mãe → complementar</h2><p class="sub" id="s-par"></p>
+      <div class="row" style="margin-top:10px">
+        <div class="fg"><label for="p-forca">Força do mapa</label><select id="p-forca"></select></div>
+        <div class="fg"><label for="p-status">Suporte nos cupons</label><select id="p-status"><option value="">Todos</option><option>Forte</option><option>Neutra</option><option>Fraca</option><option>Amostra baixa</option></select></div>
+        <div class="fg"><label for="p-busca">Buscar</label><input type="search" id="p-busca" placeholder="Mãe ou complementar"></div>
+        <div class="fg"><span class="l">&nbsp;</span><button class="btn" id="p-limpa" type="button">Ver todas as mães</button></div>
+      </div>
+      <div class="body"><div class="tw" id="t-par"></div></div>
+      <p class="note"><b>Lift</b> = chance de aparecerem juntas ÷ chance por acaso (1 = independentes; acima de 1,2 = forte; abaixo de 0,8 = fraca). <b>Attach</b> = % dos cupons da mãe que levam o complementar.</p>
+    </div>
+  </section>
+
+  <!-- CATEGORIAS -->
+  <section class="page" id="p-cat">
+    <div class="card" style="margin-top:14px">
+      <h2>Categorias vendidas</h2><p class="sub">Respeita todos os filtros. Clique no cabeçalho para ordenar.</p>
+      <div class="row" style="margin-top:10px"><div class="fg"><label for="c-busca">Buscar categoria</label><input type="search" id="c-busca" placeholder="Ex.: arroz"></div></div>
+      <div class="body"><div class="tw" id="t-cat"></div></div>
+      <p class="note" id="n-cat"></p>
+    </div>
+  </section>
+
+  <!-- CESTAS -->
+  <section class="page" id="p-cesta">
+    <div class="grid g-kpi" id="k-cesta"></div>
+    <div class="grid g-2">
+      <div class="card"><h2>Itens por cupom</h2><p class="sub">Cupons por tamanho da cesta</p><div class="body" id="c-hi"></div></div>
+      <div class="card"><h2>Ticket por cupom</h2><p class="sub">Cupons por faixa de valor</p><div class="body" id="c-ht"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Pares frequentes fora do mapa</h2>
+      <p class="sub">Categorias que aparecem juntas bem acima do acaso e não estão no mapa mãe × complementar: candidatas a entrar. Período completo, sem filtros.</p>
+      <div class="body"><div class="tw" id="t-desc"></div></div>
+      <p class="note">Pares como CEBOLINHA + COENTRO são óbvios (mesmo preparo); os de maior volume e lift são os que mais mudam o mapa.</p>
+    </div>
+  </section>
+
+  <!-- TÉCNICA -->
+  <section class="page" id="p-tec"></section>
+
+  <p class="foot-page" id="rodape"></p>
+</main>
+<div id="tt" role="tooltip"></div>
+
+<script>
+const D = /*__DADOS__*/null;
+(function(){
+"use strict";
+/* defesa contra clickjacking: a meta CSP não aceita frame-ancestors, então a página se recusa a rodar dentro de outra */
+if(window.top!==window.self){document.documentElement.replaceChildren();return;}
+window.addEventListener('error', e=>{ const a=document.getElementById('alerta'); if(a) a.innerHTML='<div class="alerta"><div><b>Erro na página:</b> '+String(e.message).replace(/</g,'&lt;')+'</div></div>'; });
+
+/* ---------- utilidades ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const nf=new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
+const brl=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const brl0=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const dec=(v,n=1)=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:n,maximumFractionDigits:n}).format(v);
+const pc=(v,n=1)=>dec(v,n)+'%';
+const comp=v=>v>=1e6?dec(v/1e6,2)+' mi':v>=1e3?dec(v/1e3,v>=1e5?0:1)+' mil':dec(v,0);
+const rs=v=>'R$ '+comp(v);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum=(a,f=x=>x)=>a.reduce((s,x)=>s+f(x),0);
+const SEM=['dom','seg','ter','qua','qui','sex','sáb'];
+const dl=i=>{const [y,m,d]=D.dias[i].split('-');return SEM[new Date(+y,m-1,+d).getDay()]+' '+d+'/'+m;};
+const nDias=D.dias.length;
+const completos=D.dias.map((_,i)=>i).filter(i=>!D.parcial[i]);
+const div=(a,b)=>b?a/b:0;
+
+/* ---------- índices ---------- */
+const mCdt=new Map(D.cdt.map(r=>[r[0]+'|'+r[1]+'|'+r[2],r[3]]));
+const mCdep=new Map(D.cdep.map(r=>[r[0]+'|'+r[1],r[2]]));
+const mCtip=new Map(D.ctip.map(r=>[r[0]+'|'+r[1],r[2]]));
+const maeGrupo=new Map(); D.mapa.forEach(p=>{ if(!maeGrupo.has(p.m)) maeGrupo.set(p.m,p.g); });
+const papel=new Map(); D.mapa.forEach(p=>{ papel.set(p.m,(papel.get(p.m)||'')+'M'); papel.set(p.c,(papel.get(p.c)||'')+'C'); });
+const grupos=[...new Set(D.mapa.map(p=>p.g))].sort();
+const forcas=[...new Set(D.mapa.map(p=>p.f))];
+
+/* ---------- estado ---------- */
+const S={page:'geral',dias:new Set(D.dias.map((_,i)=>i)),dep:-1,tip:-1,
+  vby:'dep',vbase:completos[0]??0,vcomp:completos[completos.length-1]??0,
+  conv:10,grupo:'',forca:'',status:'',busca:'',maeSel:null,buscaMae:'',buscaCat:'',
+  sort:{mae:{k:'opp',d:-1},par:{k:'nboth',d:-1},cat:{k:'venda',d:-1},prod:{k:'ex',d:-1}},ppapel:'',psit:'',pdep:'',pbusca:'',simId:null,simDs:0,parLim:150,catLim:120};
+try{const p=localStorage.getItem('cupons.page'); if(p&&document.getElementById('p-'+p)) S.page=p;}catch(e){}
+const hh=location.hash.slice(1); if(hh&&document.getElementById('p-'+hh)) S.page=hh;
+
+/* ---------- agregações ---------- */
+const selDias=()=>[...S.dias].sort((a,b)=>a-b);
+function cuboF(o={}){return D.cubo.filter(r=>(o.todosDias||S.dias.has(r[0]))&&(S.dep<0||r[2]===S.dep||o.semDep)&&(S.tip<0||r[3]===S.tip));}
+function cuponsDia(d){
+  if(S.dep<0&&S.tip<0) return D.kpi[d].n;
+  if(S.dep>=0&&S.tip>=0) return mCdt.get(d+'|'+S.dep+'|'+S.tip)||0;
+  return S.dep>=0?(mCdep.get(d+'|'+S.dep)||0):(mCtip.get(d+'|'+S.tip)||0);
+}
+function porDia(){ // métricas por dia respeitando dep/tip
+  return D.dias.map((_,d)=>{
+    const rs_=D.cubo.filter(r=>r[0]===d&&(S.dep<0||r[2]===S.dep)&&(S.tip<0||r[3]===S.tip));
+    const venda=sum(rs_,r=>r[4]), itens=sum(rs_,r=>r[5]), n=cuponsDia(d);
+    const k=D.kpi[d];
+    return {d,venda,itens,n,ticket:div(venda,n),ipc:div(itens,n),
+      pMae:div(k.com_mae,k.n)*100, att:div(k.com_mae_comp,k.com_mae)*100};
+  });
+}
+const totN=()=>sum(selDias(),d=>D.kpi[d].n);
+
+/* ---------- tooltip ---------- */
+const tt=$('#tt');
+document.addEventListener('pointermove',e=>{
+  const t=e.target.closest&&e.target.closest('[data-tip]');
+  if(!t){tt.style.opacity=0;return;}
+  const lines=t.getAttribute('data-tip').split('\n');
+  tt.innerHTML='<b>'+esc(lines[0])+'</b>'+esc(lines.slice(1).join('\n'));
+  tt.style.opacity=1;
+  const w=tt.offsetWidth,h=tt.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-8)x=e.clientX-w-14; if(y+h>innerHeight-8)y=e.clientY-h-14;
+  tt.style.left=Math.max(8,x)+'px'; tt.style.top=Math.max(8,y)+'px';
+});
+document.addEventListener('pointerleave',()=>tt.style.opacity=0);
+
+/* ---------- gráficos ---------- */
+let uid=0;
+function nice(max){
+  if(max<=0)return {max:1,ticks:[0,.25,.5,.75,1]};
+  const p=Math.pow(10,Math.floor(Math.log10(max))),f=max/p;
+  const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10, mx=n*p;
+  return {max:mx,ticks:[0,1,2,3,4].map(i=>i*mx/4)};
+}
+function topRound(x,y,w,h,r){ if(h<=0)return ''; r=Math.min(r,h,w/2);
+  return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`; }
+function barsV(el,items,o={}){
+  const id='h'+(++uid), W=Math.max(260,el.clientWidth), H=o.h||220, m={t:22,r:8,b:30,l:o.l||50};
+  const pw=W-m.l-m.r, ph=H-m.t-m.b, sc=nice(Math.max(0,...items.map(i=>i.v))), step=pw/Math.max(1,items.length);
+  const bw=Math.min(54,step*.62), y=v=>m.t+ph-v/sc.max*ph;
+  let g=sc.ticks.map(t=>`<line class="gl" x1="${m.l}" x2="${W-m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${m.l-7}" y="${y(t)+4}" text-anchor="end">${o.axis(t)}</text>`).join('');
+  items.forEach((it,i)=>{
+    const cx=m.l+step*i+step/2, h=it.v>0?Math.max(2,ph*it.v/sc.max):0, yy=m.t+ph-h;
+    g+=`<g data-tip="${esc(it.tip)}"><rect x="${m.l+step*i}" y="${m.t}" width="${step}" height="${ph}" fill="transparent"/>`+
+       `<path class="bar${it.parcial?' parcial':''}" ${it.parcial?`fill="url(#${id})"`:''} d="${topRound(cx-bw/2,yy,bw,h,4)}"/>`+
+       (items.length<=14?`<text class="vl" x="${cx}" y="${yy-6}" text-anchor="middle">${o.label(it.v)}</text>`:'')+`</g>`+
+       `<text class="ax" x="${cx}" y="${H-9}" text-anchor="middle">${esc(it.l)}</text>`;
+  });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.aria||'')}"><defs><pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--s1);opacity:.22"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--s1);stroke-width:2"/></pattern></defs>${g}<line class="base" x1="${m.l}" x2="${W-m.r}" y1="${m.t+ph}" y2="${m.t+ph}"/></svg>`;
+}
+function lineV(el,items,o={}){
+  const W=Math.max(260,el.clientWidth), H=o.h||220, m={t:22,r:14,b:30,l:o.l||50}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const vals=items.map(i=>i.v), mn=Math.min(...vals), mx=Math.max(...vals), pad=(mx-mn||mx||1)*.25;
+  const lo=Math.max(0,mn-pad), hi=mx+pad, y=v=>m.t+ph-(v-lo)/(hi-lo)*ph, step=pw/Math.max(1,items.length);
+  const x=i=>m.l+step*i+step/2;
+  let g=[0,1,2,3].map(i=>{const t=lo+(hi-lo)*i/3;return `<line class="gl" x1="${m.l}" x2="${W-m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${m.l-7}" y="${y(t)+4}" text-anchor="end">${o.axis(t)}</text>`;}).join('');
+  const pts=items.map((it,i)=>[x(i),y(it.v)]);
+  g+=`<path class="ln" d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('')}"/>`;
+  items.forEach((it,i)=>{ g+=`<g data-tip="${esc(it.tip)}"><circle cx="${x(i)}" cy="${y(it.v)}" r="18" fill="transparent"/><circle class="pt${it.parcial?' parcial':''}" cx="${x(i)}" cy="${y(it.v)}" r="5"/>`+
+    (items.length<=14?`<text class="vl" x="${x(i)}" y="${y(it.v)-11}" text-anchor="middle">${o.label(it.v)}</text>`:'')+`</g><text class="ax" x="${x(i)}" y="${H-9}" text-anchor="middle">${esc(it.l)}</text>`;});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.aria||'')}">${g}<line class="base" x1="${m.l}" x2="${W-m.r}" y1="${m.t+ph}" y2="${m.t+ph}"/></svg>`;
+}
+function hbars(el,items,o={}){
+  if(!items.length){el.innerHTML='<div class="empty">Sem dados para os filtros atuais.</div>';return;}
+  const max=Math.max(...items.map(i=>i.v),1);
+  el.innerHTML=items.map(it=>`<div class="hb ${o.cls||''}" data-tip="${esc(it.tip)}"><span class="hl" title="${esc(it.l)}">${esc(it.l)}</span><span class="ht"><i style="width:${Math.max(1.5,it.v/max*100)}%"></i></span><span class="hv">${o.fmt(it.v)}</span></div>`).join('');
+}
+const dlt=(a,b,pp)=>{ if(b===null||b===undefined||!isFinite(a)||!isFinite(b)) return '<span class="dl eq">—</span>';
+  if(pp){const d=a-b;const c=Math.abs(d)<.05?'eq':d>0?'up':'dn';return `<span class="dl ${c}">${d>0.05?'▲':d<-0.05?'▼':'●'} ${dec(Math.abs(d),1)} p.p.</span>`;}
+  if(!b) return '<span class="dl eq">—</span>';
+  const d=(a/b-1)*100,c=Math.abs(d)<.05?'eq':d>0?'up':'dn';return `<span class="dl ${c}">${d>0.05?'▲':d<-0.05?'▼':'●'} ${dec(Math.abs(d),1)}%</span>`; };
+
+/* ---------- tabelas genéricas ---------- */
+function tabela(el,id,cols,rows,o={}){
+  const st=S.sort[id];
+  if(st){const c=cols.find(c=>c.k===st.k); if(c) rows=[...rows].sort((a,b)=>{const x=c.v(a),y=c.v(b);return (typeof x==='string'?x.localeCompare(y,'pt-BR'):x-y)*st.d;});}
+  const head=cols.map(c=>`<th class="${c.r?'r':''}" ${st?`data-sort="${id}:${c.k}" tabindex="0" aria-sort="${st.k===c.k?(st.d>0?'ascending':'descending'):'none'}"`:''}>${c.t}${st&&st.k===c.k?(st.d>0?' ▲':' ▼'):''}</th>`).join('');
+  const lim=o.limit?rows.slice(0,o.limit):rows;
+  const body=lim.map(r=>`<tr class="${o.rowCls?o.rowCls(r):''}" ${o.rowAttr?o.rowAttr(r):''}>${cols.map(c=>`<td class="${c.r?'r':''} ${c.cls||''}">${c.f(r)}</td>`).join('')}</tr>`).join('');
+  el.innerHTML=rows.length?`<table class="t"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`:'<div class="empty">Nada para mostrar com os filtros atuais.</div>';
+  return {total:rows.length,shown:lim.length};
+}
+const COL_TEXTO=['nome','cat','sec','dep','tip','mn','cn','g','r','f','st','mo','pap','papel'];
+document.addEventListener('click',e=>{
+  const th=e.target.closest('th[data-sort]'); if(!th) return;
+  const [id,k]=th.dataset.sort.split(':'), st=S.sort[id];
+  st.d=st.k===k?-st.d:(COL_TEXTO.includes(k)?1:-1); st.k=k; update();
+});
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('th[data-sort]')){e.preventDefault();e.target.click();} });
+
+/* ---------- cartões ---------- */
+const kpi=(l,v,f,tip)=>`<div class="card kpi" ${tip?`data-tip="${esc(tip)}"`:''}><div class="lab">${l}</div><div class="val">${v}</div><div class="foot">${f||''}</div></div>`;
+
+/* ---------- página: visão geral ---------- */
+function geral(){
+  const pd=porDia(), sd=selDias(), filtro=S.dep>=0||S.tip>=0;
+  const venda=sum(sd,d=>pd[d].venda), itens=sum(sd,d=>pd[d].itens), n=sum(sd,d=>pd[d].n);
+  const nAll=totN(), cm=sum(sd,d=>D.kpi[d].com_mae), cmc=sum(sd,d=>D.kpi[d].com_mae_comp), un=sum(sd,d=>D.kpi[d].unit);
+  const lastC=[...sd].filter(d=>!D.parcial[d]).slice(-2);
+  const dTk=lastC.length===2?dlt(pd[lastC[1]].ticket,pd[lastC[0]].ticket):'', dVn=lastC.length===2?dlt(pd[lastC[1]].venda,pd[lastC[0]].venda):'';
+  const ref=lastC.length===2?` vs ${dl(lastC[0])}`:'';
+  $('#k-geral').innerHTML=
+    kpi('Venda',brl0.format(venda),dVn?dVn+' <span style="color:var(--muted)">'+ref+' (último dia completo)</span>':'Soma dos dias selecionados')+
+    kpi('Cupons',nf.format(n),filtro?'Cupons com itens do filtro':sd.length+' dia(s) selecionado(s)')+
+    kpi('Ticket médio',brl.format(div(venda,n)),dTk?dTk+' <span style="color:var(--muted)">'+ref+'</span>':'Venda ÷ cupons')+
+    kpi('Itens por cupom',dec(div(itens,n),1),'Linhas de produto ÷ cupons')+
+    kpi('Cupons com categoria mãe',pc(div(cm,nAll)*100,0),nf.format(cm)+' de '+nf.format(nAll)+' cupons'+(filtro?' · todos os produtos':''),'Cupons que levam ao menos uma categoria mãe do mapa')+
+    kpi('Mãe + complementar',pc(div(cmc,cm)*100,0),'dos cupons com mãe levam complementar'+(filtro?' · todos os produtos':''),'Cupons com mãe e ao menos um complementar mapeado ÷ cupons com mãe');
+  const lab=pd.map(p=>dl(p.d));
+  const mk=(f,fmt)=>sd.map(d=>({l:lab[d],v:pd[d][f],parcial:D.parcial[d],tip:lab[d]+(D.parcial[d]?' (parcial)':'')+'\n'+fmt(pd[d][f])+(f==='venda'?'\n'+nf.format(pd[d].n)+' cupons':'')}));
+  barsV($('#c-venda'),mk('venda',v=>brl0.format(v)),{axis:comp,label:comp,l:54,aria:'Venda por dia'});
+  barsV($('#c-cupons'),mk('n',v=>nf.format(v)+' cupons'),{axis:v=>nf.format(v),label:v=>nf.format(v),l:46,aria:'Cupons por dia'});
+  lineV($('#c-ticket'),mk('ticket',v=>brl.format(v)),{axis:v=>dec(v,0),label:v=>dec(v,0),l:40,aria:'Ticket médio por dia'});
+  const rows=cuboF(), tot=sum(rows,r=>r[4]);
+  const agg=(idx,nome)=>{const m=new Map();rows.forEach(r=>m.set(r[idx],(m.get(r[idx])||0)+r[4]));return [...m].sort((a,b)=>b[1]-a[1]).map(([k,v])=>({l:nome(k),v,tip:nome(k)+'\n'+brl0.format(v)+'\n'+pc(div(v,tot)*100)+' da venda'}));};
+  hbars($('#c-dep'),agg(2,k=>D.deptos[k]).slice(0,10),{fmt:v=>rs(v)+' · '+pc(div(v,tot)*100,0)});
+  hbars($('#c-tipo'),agg(3,k=>D.tipos[k]),{fmt:v=>rs(v)+' · '+pc(div(v,tot)*100,0),cls:'s2'});
+  varGeral(pd);
+  varDim();
+}
+function varGeral(pd){
+  const cols=[{t:'Dia',f:r=>`<b>${dl(r.d)}</b>${D.parcial[r.d]?' <span class="tag warn">parcial</span>':''}`},
+    {t:'Venda',r:1,f:r=>brl0.format(r.venda)},{t:'Δ',r:1,f:r=>r.dv},
+    {t:'Cupons',r:1,f:r=>nf.format(r.n)},{t:'Δ',r:1,f:r=>r.dn},
+    {t:'Ticket',r:1,f:r=>brl.format(r.ticket)},{t:'Δ',r:1,f:r=>r.dt},
+    {t:'Itens/cupom',r:1,f:r=>dec(r.ipc,1)},{t:'Δ',r:1,f:r=>r.di},
+    {t:'% com mãe',r:1,f:r=>pc(r.pMae,1)},{t:'Δ',r:1,f:r=>r.dm},
+    {t:'% mãe+compl.',r:1,f:r=>pc(r.att,1)},{t:'Δ',r:1,f:r=>r.da}];
+  const rows=pd.map((p,i)=>{const q=pd[i-1],ok=q&&!D.parcial[i]&&!D.parcial[i-1];
+    return {...p,dv:ok?dlt(p.venda,q.venda):dlt(NaN,0),dn:ok?dlt(p.n,q.n):dlt(NaN,0),dt:ok?dlt(p.ticket,q.ticket):dlt(NaN,0),
+      di:ok?dlt(p.ipc,q.ipc):dlt(NaN,0),dm:ok?dlt(p.pMae,q.pMae,1):dlt(NaN,0),da:ok?dlt(p.att,q.att,1):dlt(NaN,0)};});
+  const c=completos.map(d=>pd[d]);
+  if(c.length){const avg=f=>sum(c,x=>x[f])/c.length, a=c[0], z=c[c.length-1];
+    rows.push({d:-1,venda:avg('venda'),n:avg('n'),ticket:avg('ticket'),ipc:avg('ipc'),pMae:avg('pMae'),att:avg('att'),tot:1,
+      dv:'',dn:'',dt:'',di:'',dm:'',da:''});
+    if(c.length>1) rows.push({d:-2,venda:z.venda,n:z.n,ticket:z.ticket,ipc:z.ipc,pMae:z.pMae,att:z.att,tot:1,
+      dv:dlt(z.venda,a.venda),dn:dlt(z.n,a.n),dt:dlt(z.ticket,a.ticket),di:dlt(z.ipc,a.ipc),dm:dlt(z.pMae,a.pMae,1),da:dlt(z.att,a.att,1)});}
+  const f0=cols[0].f; cols[0].f=r=>r.d===-1?'Média dos dias completos':r.d===-2?`Último vs primeiro dia completo (${dl(completos[completos.length-1])} vs ${dl(completos[0])})`:f0(r);
+  tabela($('#t-var'),'var',cols,rows,{rowCls:r=>r.tot?'tot':''});
+  $('#n-var').textContent=D.parcial.some(Boolean)?'Dias parciais (exportação cortada) aparecem na tabela mas não entram nas variações nem nas médias.':'';
+}
+function varDim(){
+  const by=S.vby, rows=D.cubo.filter(r=>S.tip<0||r[3]===S.tip);
+  const key=r=>by==='dep'?D.deptos[r[2]]:by==='tip'?D.tipos[r[3]]:by==='sec'?(D.cats[r[1]]?.s||'-'):(D.cats[r[1]]?.n||'-');
+  const m=new Map(); let tb=0,tc=0;
+  rows.forEach(r=>{ if(r[0]!==S.vbase&&r[0]!==S.vcomp) return; const k=key(r); const e=m.get(k)||{k,b:0,c:0};
+    if(r[0]===S.vbase){e.b+=r[4];tb+=r[4];} if(r[0]===S.vcomp){e.c+=r[4];tc+=r[4];} m.set(k,e); });
+  const out=[...m.values()].map(e=>({...e,d:e.c-e.b,pb:div(e.b,tb)*100,pcm:div(e.c,tc)*100}));
+  const cols=[{k:'nome',t:{dep:'Departamento',tip:'Tipo',sec:'Seção',cat:'Categoria'}[by],f:r=>`<div class="nm" title="${esc(r.k)}">${esc(r.k)}</div>`,v:r=>r.k},
+    {k:'b',t:'Venda '+dl(S.vbase),r:1,f:r=>brl0.format(r.b),v:r=>r.b},{k:'c',t:'Venda '+dl(S.vcomp),r:1,f:r=>brl0.format(r.c),v:r=>r.c},
+    {k:'d',t:'Δ R$',r:1,f:r=>`<span class="dl ${r.d>0?'up':r.d<0?'dn':'eq'}">${r.d>0?'+':''}${brl0.format(r.d)}</span>`,v:r=>r.d},
+    {k:'p',t:'Δ %',r:1,f:r=>r.b?dlt(r.c,r.b):'<span class="tag info">novo</span>',v:r=>r.b?r.c/r.b-1:9e9},
+    {k:'pb',t:'Part. base',r:1,f:r=>pc(r.pb),v:r=>r.pb},{k:'pc',t:'Part. comp.',r:1,f:r=>pc(r.pcm),v:r=>r.pcm},
+    {k:'pp',t:'Δ p.p.',r:1,f:r=>dlt(r.pcm,r.pb,1),v:r=>r.pcm-r.pb}];
+  S.sort.var2=S.sort.var2||{k:'d',d:-1};
+  tabela($('#t-var2'),'var2',cols,out,{limit:80});
+}
+
+/* ---------- página: mãe × complementar ---------- */
+function calcMaes(){
+  const N=totN(), a=new Map();
+  D.maes.forEach(r=>{ if(!S.dias.has(r[0])) return; const v=a.get(r[1])||[0,0,0,0,0]; for(let j=0;j<5;j++) v[j]+=r[2+j]; a.set(r[1],v); });
+  return [...a].filter(([m])=>!S.grupo||maeGrupo.get(m)===S.grupo).map(([m,v])=>{
+    const gap=v[0]-v[1], vcomp=div(v[4],v[1]);
+    return {id:m,nome:D.cats[m]?.n||String(m),g:maeGrupo.get(m)||'-',n:v[0],pen:div(v[0],N)*100,any:v[1],att:div(v[1],v[0])*100,
+      tkc:div(v[2],v[1]),tks:div(v[3],gap),gap,vcomp,opp:gap*(S.conv/100)*vcomp};
+  }).filter(r=>!S.buscaMae||r.nome.toLowerCase().includes(S.buscaMae.toLowerCase()));
+}
+function calcPares(){
+  const N=totN(), a=new Map(), nc=new Map();
+  D.pares.forEach(r=>{ if(!S.dias.has(r[0])) return; const v=a.get(r[1])||[0,0,0,0,0]; for(let j=0;j<5;j++) v[j]+=r[2+j]; a.set(r[1],v); });
+  D.ncat.forEach(r=>{ if(S.dias.has(r[0])) nc.set(r[1],(nc.get(r[1])||0)+r[2]); });
+  return D.mapa.map((p,i)=>{
+    const v=a.get(i)||[0,0,0,0,0], ncomp=nc.get(p.c)||0, esp=div(v[0]*ncomp,N), lift=v[0]&&ncomp?v[1]*N/(v[0]*ncomp):null;
+    const st=v[0]<30||esp<5?'Amostra baixa':lift>=1.2?'Forte':lift>=0.8?'Neutra':'Fraca';
+    return {...p,nmae:v[0],nboth:v[1],ncomp,att:div(v[1],v[0])*100,lift,esp,st};
+  }).filter(r=>r.nmae>0);
+}
+const stTag=s=>`<span class="tag ${s==='Forte'?'ok':s==='Fraca'?'bad':s==='Neutra'?'info':'mut'}">${s}</span>`;
+function mae(){
+  const rows=calcMaes(), sd=selDias();
+  const nm=sum(sd,d=>D.kpi[d].com_mae), nmc=sum(sd,d=>D.kpi[d].com_mae_comp), nAll=totN();
+  const tkc=div(sum(sd,d=>D.kpi[d].tot_mae_comp),nmc), tks=div(sum(sd,d=>D.kpi[d].tot_mae_sem),nm-nmc);
+  const opp=sum(rows,r=>r.opp);
+  $('#k-mae').innerHTML=kpi('Mães ativas',nf.format(rows.length),'categorias mãe com venda no período')+
+    kpi('Cupons com mãe',pc(div(nm,nAll)*100,0),nf.format(nm)+' de '+nf.format(nAll))+
+    kpi('Com complementar',pc(div(nmc,nm)*100,0),nf.format(nmc)+' cupons com mãe + complementar')+
+    kpi('Ticket com × sem compl.',brl0.format(tkc)+' <span style="font-size:15px;color:var(--muted)">× '+brl0.format(tks)+'</span>',tks?dlt(tkc,tks)+' <span style="color:var(--muted)">com complementar</span>':'', 'Cada cupom conta uma vez. Parte da diferença é cesta maior, não causalidade.')+
+    kpi('Oportunidade estimada',brl0.format(opp),'cenário de '+S.conv+'% de conversão do gap','Soma da oportunidade das mães listadas abaixo (respeita grupo e busca).');
+  const top=[...rows].sort((a,b)=>b.opp-a.opp).slice(0,10);
+  hbars($('#c-opp'),top.map(r=>({l:r.nome,v:r.opp,tip:r.nome+'\n'+nf.format(r.gap)+' cupons sem complementar\nValor médio do complementar: '+brl.format(r.vcomp)+'\nOportunidade: '+brl0.format(r.opp)})),{fmt:v=>rs(v)});
+  const top2=[...rows].sort((a,b)=>b.n-a.n).slice(0,10);
+  hbars($('#c-att'),top2.map(r=>({l:r.nome,v:r.att,tip:r.nome+'\n'+nf.format(r.n)+' cupons com a mãe\n'+nf.format(r.any)+' com complementar ('+pc(r.att)+')'})),{fmt:v=>pc(v,0),cls:'s3'});
+  const cols=[{k:'nome',t:'Mãe',f:r=>`<div class="nm" title="${esc(r.nome)}"><b>${esc(r.nome)}</b></div>`,v:r=>r.nome},
+    {k:'g',t:'Grupo',f:r=>esc(r.g),v:r=>r.g},
+    {k:'n',t:'Cupons c/ mãe',r:1,f:r=>nf.format(r.n),v:r=>r.n},{k:'pen',t:'Penetração',r:1,f:r=>pc(r.pen),v:r=>r.pen},
+    {k:'att',t:'% c/ compl.',r:1,f:r=>pc(r.att,0),v:r=>r.att},
+    {k:'tkc',t:'Ticket c/ compl.',r:1,f:r=>r.any?brl.format(r.tkc):'—',v:r=>r.tkc},
+    {k:'tks',t:'Ticket s/ compl.',r:1,f:r=>r.gap?brl.format(r.tks):'—',v:r=>r.tks},
+    {k:'dt',t:'Δ ticket',r:1,f:r=>r.any&&r.gap?dlt(r.tkc,r.tks):'—',v:r=>r.tks?r.tkc/r.tks:0},
+    {k:'gap',t:'Gap (cupons)',r:1,f:r=>nf.format(r.gap),v:r=>r.gap},
+    {k:'opp',t:'Oportunidade',r:1,f:r=>brl0.format(r.opp),v:r=>r.opp}];
+  tabela($('#t-mae'),'mae',cols,rows,{limit:150,rowCls:r=>'clk'+(S.maeSel===r.id?' sel':''),rowAttr:r=>`data-mae="${r.id}"`});
+  pares();
+}
+function pares(){
+  let rows=calcPares();
+  if(S.maeSel!==null) rows=rows.filter(r=>r.m===S.maeSel);
+  if(S.grupo) rows=rows.filter(r=>r.g===S.grupo);
+  if(S.forca) rows=rows.filter(r=>r.f===S.forca);
+  if(S.status) rows=rows.filter(r=>r.st===S.status);
+  const b=S.busca.toLowerCase(); if(b) rows=rows.filter(r=>(r.mn+' '+r.cn).toLowerCase().includes(b));
+  $('#h-par').textContent=S.maeSel!==null?'Relações de '+(D.cats[S.maeSel]?.n||S.maeSel)+' com os complementares':'Relações mãe → complementar';
+  const cols=[{k:'mn',t:'Mãe',f:r=>`<div class="nm" title="${esc(r.mn)}">${esc(r.mn)}</div>`,v:r=>r.mn},
+    {k:'cn',t:'Complementar',f:r=>`<div class="nm" title="${esc(r.cn)}"><b>${esc(r.cn)}</b></div>`,v:r=>r.cn},
+    {k:'g',t:'Grupo',f:r=>esc(r.g),v:r=>r.g},{k:'r',t:'Relação',f:r=>esc(r.r),v:r=>r.r},
+    {k:'f',t:'Força (mapa)',f:r=>`<span class="tag ${r.f==='ALTA'?'info':'mut'}">${esc(r.f)}</span>`,v:r=>r.f},
+    {k:'nmae',t:'Cupons mãe',r:1,f:r=>nf.format(r.nmae),v:r=>r.nmae},
+    {k:'nboth',t:'Cupons juntos',r:1,f:r=>nf.format(r.nboth),v:r=>r.nboth},
+    {k:'att',t:'Attach',r:1,f:r=>pc(r.att),v:r=>r.att},
+    {k:'ncomp',t:'Cupons compl.',r:1,f:r=>nf.format(r.ncomp),v:r=>r.ncomp},
+    {k:'lift',t:'Lift',r:1,f:r=>r.lift===null?'—':dec(r.lift,2),v:r=>r.lift??-1},
+    {k:'st',t:'Suporte',f:r=>stTag(r.st),v:r=>r.st},
+    {k:'mo',t:'Motivo do mapa',cls:'wrapc',f:r=>esc(r.mo),v:r=>r.mo}];
+  const res=tabela($('#t-par'),'par',cols,rows,{limit:S.parLim});
+  $('#s-par').textContent=nf.format(res.total)+' relações'+(res.total>res.shown?' · mostrando '+res.shown+' (refine os filtros ou ordene)':'');
+}
+
+/* ---------- página: categorias ---------- */
+function cat(){
+  const rows=cuboF(), N=totN(), tot=sum(rows,r=>r[4]);
+  const m=new Map(); rows.forEach(r=>{const k=r[1]+'|'+r[2]+'|'+r[3]; const e=m.get(k)||{id:r[1],dep:D.deptos[r[2]],tip:D.tipos[r[3]],venda:0,itens:0,cup:0}; e.venda+=r[4];e.itens+=r[5];e.cup+=r[6];m.set(k,e);});
+  let out=[...m.values()].map(e=>({...e,nome:D.cats[e.id]?.n||'SEM CATEGORIA',sec:D.cats[e.id]?.s||'-',pap:papel.get(e.id)||'',part:div(e.venda,tot)*100,pen:div(e.cup,N)*100,tk:div(e.venda,e.cup)}));
+  const b=S.buscaCat.toLowerCase(); if(b) out=out.filter(r=>(r.nome+' '+r.dep+' '+r.sec).toLowerCase().includes(b));
+  const pp=p=>!p?'<span class="tag mut">—</span>':p.includes('M')&&p.includes('C')?'<span class="tag warn">Mãe e compl.</span>':p.includes('M')?'<span class="tag info">Mãe</span>':'<span class="tag ok">Complementar</span>';
+  const cols=[{k:'nome',t:'Categoria',f:r=>`<div class="nm" title="${esc(r.nome)}"><b>${esc(r.nome)}</b></div>`,v:r=>r.nome},
+    {k:'sec',t:'Seção',f:r=>`<div class="nm">${esc(r.sec)}</div>`,v:r=>r.sec},{k:'dep',t:'Departamento',f:r=>esc(r.dep),v:r=>r.dep},
+    {k:'tip',t:'Tipo',f:r=>esc(r.tip),v:r=>r.tip},{k:'pap',t:'Papel no mapa',f:r=>pp(r.pap),v:r=>r.pap},
+    {k:'venda',t:'Venda',r:1,f:r=>brl0.format(r.venda),v:r=>r.venda},{k:'part',t:'% venda',r:1,f:r=>pc(r.part,2),v:r=>r.part},
+    {k:'itens',t:'Itens',r:1,f:r=>nf.format(r.itens),v:r=>r.itens},{k:'cup',t:'Cupons',r:1,f:r=>nf.format(r.cup),v:r=>r.cup},
+    {k:'pen',t:'Penetração',r:1,f:r=>pc(r.pen),v:r=>r.pen},{k:'tk',t:'Venda/cupom',r:1,f:r=>brl.format(r.tk),v:r=>r.tk}];
+  const res=tabela($('#t-cat'),'cat',cols,out,{limit:S.catLim});
+  $('#n-cat').innerHTML=nf.format(res.total)+' linhas'+(res.total>res.shown?' · mostrando '+res.shown+' · <a href="#" id="mais-cat">mostrar mais</a>':'');
+}
+
+/* ---------- página: cestas ---------- */
+function cesta(){
+  const sd=selDias(), n=totN(), v=sum(sd,d=>D.kpi[d].venda), it=sum(sd,d=>D.kpi[d].itens), un=sum(sd,d=>D.kpi[d].unit);
+  const hi=D.binsItens.map((_,j)=>sum(sd,d=>D.hItens[d][j])), ht=D.binsTicket.map((_,j)=>sum(sd,d=>D.hTicket[d][j]));
+  const big=hi.slice(4).reduce((a,b)=>a+b,0);
+  $('#k-cesta').innerHTML=kpi('Cupons',nf.format(n),'no período selecionado')+kpi('Cupons de 1 item',pc(div(un,n)*100,0),nf.format(un)+' cupons · sem venda casada possível')+
+    kpi('Itens por cupom',dec(div(it,n),1),'média')+kpi('Cestas grandes (6+ itens)',pc(div(big,n)*100,0),nf.format(big)+' cupons')+kpi('Ticket médio',brl.format(div(v,n)),'todos os produtos');
+  const mk=(bins,h,t)=>bins.map((l,j)=>({l,v:h[j],tip:l+'\n'+nf.format(h[j])+' cupons\n'+pc(div(h[j],n)*100)+' do total'}));
+  barsV($('#c-hi'),mk(D.binsItens,hi),{axis:v=>nf.format(v),label:v=>nf.format(v),l:46,aria:'Cupons por quantidade de itens'});
+  barsV($('#c-ht'),mk(D.binsTicket,ht),{axis:v=>nf.format(v),label:v=>nf.format(v),l:46,aria:'Cupons por faixa de ticket'});
+  const cols=[{t:'Categoria A',f:r=>esc(r.a)},{t:'Categoria B',f:r=>esc(r.b)},{t:'Cupons juntos',r:1,f:r=>nf.format(r.n)},
+    {t:'A → B',r:1,f:r=>pc(r.ab,0)},{t:'B → A',r:1,f:r=>pc(r.ba,0)},{t:'Lift',r:1,f:r=>dec(r.lift,1)}];
+  tabela($('#t-desc'),'desc',cols,D.descobertos);
+}
+
+/* ---------- página: técnica ---------- */
+function tec(){
+  const ic={ok:'✓',aviso:'!',erro:'✕'};
+  const q=D.qualidade.map(x=>`<div class="it"><h3><span class="ico ${x.s}">${ic[x.s]}</span>${esc(x.t)}</h3><p>${esc(x.x)}</p></div>`).join('');
+  const pr=D.pro.map(x=>`<div class="it"><h3><span class="ico pro">+</span>${esc(x.t)}</h3><p>${esc(x.x)}</p><div class="ev">${esc(x.e)}</div></div>`).join('');
+  const co=D.contra.map(x=>`<div class="it"><h3><span class="ico con">−</span>${esc(x.t)}</h3><p>${esc(x.x)}</p><div class="ev">${esc(x.e)}</div></div>`).join('');
+  $('#p-tec').innerHTML=`
+  <div class="cols">
+    <div class="card"><h2>Qualidade dos dados</h2><p class="sub">Verificações automáticas na leitura do arquivo</p><div class="body">${q}</div></div>
+    <div class="card"><h2>Resumo da base</h2><div class="body">
+      <ul><li><b>Loja:</b> ${esc(D.meta.loja)}</li><li><b>Período recebido:</b> ${dl(0)} a ${dl(nDias-1)}</li>
+      <li><b>Linhas:</b> ${nf.format(D.meta.linhas)} · <b>Cupons:</b> ${nf.format(D.meta.cupons)} · <b>Produtos:</b> ${nf.format(D.meta.produtos)}</li>
+      <li><b>Arquivos:</b> ${D.meta.arquivos.map(esc).join(', ')}</li><li><b>Gerado em:</b> ${esc(D.meta.gerado)}</li></ul></div></div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Prós · o que os dados sustentam</h2><p class="sub">Período completo recebido, sem filtros</p><div class="body">${pr||'<div class="empty">—</div>'}</div></div>
+    <div class="card"><h2>Contras · riscos e lacunas</h2><p class="sub">Período completo recebido, sem filtros</p><div class="body">${co||'<div class="empty">—</div>'}</div></div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Metodologia</h2><div class="body"><ul>
+      <li><b>Cupom:</b> chave única <code>filial_número_caixa_data</code>. Cada linha é um produto no cupom, com valor em R$.</li>
+      <li><b>Categoria:</b> o código antes do “ - ” no produto liga à <code>dim_produto</code> do modelo Produtos (categoria comercial, departamento, seção, tipo).</li>
+      <li><b>Mãe e complementar:</b> relações do mapa <code>Mapa_Mae_Complementar</code> (719 pares).</li>
+      <li><b>Penetração</b> = cupons com a categoria ÷ cupons.</li>
+      <li><b>Attach</b> = cupons com mãe e complementar ÷ cupons com a mãe.</li>
+      <li><b>Lift</b> = (juntos × cupons) ÷ (cupons mãe × cupons complementar). 1 = sem associação.</li>
+      <li><b>Suporte:</b> Forte ≥ 1,2 · Neutra 0,8–1,2 · Fraca &lt; 0,8 · Amostra baixa se menos de 30 cupons da mãe ou menos de 5 juntos esperados por acaso.</li>
+      <li><b>Oportunidade:</b> cupons com mãe sem complementar × % de conversão × valor médio do complementar nos cupons que já levam.</li></ul></div></div>
+    <div class="card"><h2>Limitações e cuidados</h2><div class="body"><ul>
+      <li>Coocorrência não é causalidade: cupons maiores têm mais de tudo, inclusive complementares.</li>
+      <li>Uma loja e poucos dias: sazonalidade (início/fim de mês, fim de semana) não aparece.</li>
+      <li>Sem quantidade, custo ou cliente: sem margem, sem unidades, sem recompra.</li>
+      <li>O mesmo cupom conta em várias mães; por isso totais por mãe não somam o total de cupons.</li>
+      <li>Penetração e “% com mãe” usam todos os produtos do cupom, mesmo com filtro de departamento.</li></ul></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Próximos passos recomendados</h2><div class="body"><ul>
+    <li><b>Dados completos:</b> o export do Power BI para Excel corta em 150 mil linhas. Exporte por dia (ou por faixa menor), solte os arquivos em <code>dados/entrada</code> e rode <code>python gerar_site.py</code>; cupons repetidos entre arquivos são descartados.</li>
+    <li><b>Revisar o mapa:</b> relações “Fracas” com amostra boa podem ser substitutos; pares da página Cestas podem virar novas relações.</li>
+    <li><b>Testar ações:</b> priorizar as mães de maior oportunidade (exposição conjunta, combos) e medir o attach antes e depois.</li>
+    <li><b>Ampliar a base:</b> incluir quantidade, custo e outras lojas para calcular margem e comparar perfis.</li></ul></div></div>`;
+}
+
+/* ---------- páginas de encarte ---------- */
+const E=D.enc;
+const sitTag=l=>{ const s=l.st==='ok'?l.vi:l.st;
+  const c={'plausível':'ok','exige pico':'warn','acima do histórico':'bad','sem histórico':'mut','abaixo do custo':'bad','preço divergente':'warn','sem desconto':'mut','sem venda no mês':'mut'}[s]||'mut';
+  return `<span class="tag ${c}">${esc(s||'—')}</span>`; };
+const rsf=v=>v==null?'—':brl.format(v), dcf=(v,n=1)=>v==null?'—':dec(v,n);
+function enc(){
+  if(!E){$('#k-enc').innerHTML='';return;}
+  const k=E.kpi, ef=E.efeito;
+  $('#enc-aviso').innerHTML=ef?'':`<div class="alerta" style="border-left-color:var(--warn);background:var(--warn-bg)"><span class="ico aviso">!</span><div><b>Sem datas do encarte.</b> A tabela Tipo de Preço não diz em que dias cada encarte valeu, e o preço praticado na venda não revela isso (só ${k.n_ativa} dos ${k.n} aparecem vendendo ao preço promocional nos últimos 4 dias). Para medir a influência nas vendas de outros produtos, preencha <code>dados/encarte_janelas.csv</code> (modelo em <code>dados/encarte_janelas_modelo.csv</code>: id_produto;inicio;fim) e rode <code>python gerar_site.py</code>.</div></div>`;
+  $('#k-enc').innerHTML=kpi('Produtos em encarte',nf.format(k.n),'tabela Tipo de Preço · '+E.tipos.join(', '))+
+    kpi('Em categoria mãe',nf.format(k.n_mae),'distribuídos em '+k.maes_enc+' categorias mãe')+
+    kpi('Em categoria complementar',nf.format(k.n_comp),'itens que completam alguma mãe')+
+    kpi('Desconto médio',pc(k.desc_med,1),'entre os '+k.n_ok+' itens com conta válida')+
+    kpi('Aumento mediano de volume',pc(k.aum_med,0),'para manter a margem total do item','Quanto cada item precisa vender a mais, no mediano, para não perder margem com o desconto.')+
+    kpi('Já vendendo a preço de encarte',k.n_ativa+' de '+k.n,'preço praticado nos últimos 4 dias ≈ promocional');
+  const cols=[{k:'nome',t:'Mãe',f:r=>`<b>${esc(r.nome)}</b>`,v:r=>r.nome},{k:'g',t:'Grupo',f:r=>esc(r.grupo),v:r=>r.grupo},
+    {k:'n_enc',t:'Itens em encarte',r:1,f:r=>`<span data-tip="${esc(r.nome+'\n'+r.produtos.join('\n'))}">${r.n_enc}</span>`,v:r=>r.n_enc},
+    {k:'ds',t:'Desconto médio',r:1,f:r=>r.desc_med==null?'—':pc(r.desc_med),v:r=>r.desc_med??-1},
+    {k:'cup',t:'Cupons c/ mãe',r:1,f:r=>nf.format(r.cupons),v:r=>r.cupons},
+    {k:'att',t:'% levam complementar',r:1,f:r=>r.att==null?'—':pc(r.att*100,0),v:r=>r.att??-1},
+    {k:'cm',t:'Complementares que puxam venda (R$/dia)',cls:'wrapc',f:r=>r.comps.slice(0,4).map(c=>esc(c.c)+' <b>'+rs(c.vd)+'</b>').join(' · '),v:r=>r.comps.length?r.comps[0].vd:0}];
+  S.sort.encmae=S.sort.encmae||{k:'n_enc',d:-1};
+  tabela($('#t-encmae'),'encmae',cols,E.maes);
+  if(!ef){$('#enc-efeito').innerHTML='';return;}
+  const lt=ef.leitura.map(x=>`<div class="it"><h3><span class="ico ${x.k==='pro'?'pro':x.k==='con'?'con':'aviso'}">${x.k==='pro'?'+':x.k==='con'?'−':'•'}</span>${esc(x.t)}</h3><p>${esc(x.x)}</p></div>`).join('');
+  $('#enc-efeito').innerHTML=`<div class="card" style="margin-top:14px"><h2>Influência do encarte nas vendas de outros produtos</h2><p class="sub">Janela: ${ef.janela.map(d=>d.slice(8)+'/'+d.slice(5,7)).join(', ')} · base: ${ef.base.length} dias úteis anteriores</p><div class="body">${lt}</div></div>
+  <div class="card" style="margin-top:14px"><h2>Por categoria mãe</h2><div class="body"><div class="tw" id="t-efmae"></div></div><p class="note">Índice = participação na venda da loja na janela ÷ participação no período-base (100 = igual). Complementares comparados com o resto da loja.</p></div>`;
+  const c2=[{k:'nome',t:'Mãe',f:r=>`<b>${esc(r.nome)}</b>`,v:r=>r.nome},{k:'n_enc',t:'Itens',r:1,f:r=>r.n_enc,v:r=>r.n_enc},
+    {k:'ie',t:'Índice itens em encarte',r:1,f:r=>r.idx_enc==null?'—':dec(r.idx_enc*100,0),v:r=>r.idx_enc??-1},
+    {k:'ic',t:'Índice complementares',r:1,f:r=>r.idx_comp==null?'—':dec(r.idx_comp*100,0),v:r=>r.idx_comp??-1},
+    {k:'dr',t:'Δ vs resto da loja (pts)',r:1,f:r=>r.dif_ref==null?'—':`<span class="dl ${r.dif_ref>0?'up':'dn'}">${r.dif_ref>0?'▲':'▼'} ${dec(Math.abs(r.dif_ref*100),0)}</span>`,v:r=>r.dif_ref??-9},
+    {k:'ne',t:'Cupons c/ encarte',r:1,f:r=>nf.format(r.ne),v:r=>r.ne},{k:'ns',t:'Cupons s/ encarte',r:1,f:r=>nf.format(r.ns),v:r=>r.ns},
+    {k:'ae',t:'% compl. c/ encarte',r:1,f:r=>r.att_e==null?'—':pc(r.att_e*100,0),v:r=>r.att_e??-1},
+    {k:'as',t:'% compl. s/ encarte',r:1,f:r=>r.att_s==null?'—':pc(r.att_s*100,0),v:r=>r.att_s??-1},
+    {k:'dp',t:'Δ p.p.',r:1,f:r=>r.dif_pp==null?'—':dlt(r.dif_pp,0,1),v:r=>r.dif_pp??-99}];
+  S.sort.efmae=S.sort.efmae||{k:'n_enc',d:-1};
+  tabela($('#t-efmae'),'efmae',c2,ef.maes);
+}
+function prodRows(){
+  const b=S.pbusca.toLowerCase();
+  return E.produtos.filter(l=>(!S.ppapel||(S.ppapel==='-'?l.papel==='-':l.papel.includes(S.ppapel)))&&
+    (!S.psit||(l.st==='ok'?l.vi:l.st)===S.psit)&&(!S.pdep||l.dep===S.pdep)&&(!b||(l.n+' '+l.cat).toLowerCase().includes(b)));
+}
+function prod(){
+  if(!E) return;
+  const k=E.kpi, ok=E.produtos.filter(l=>l.st==='ok');
+  $('#k-prod').innerHTML=kpi('Produtos em encarte',nf.format(k.n),nf.format(k.n_ok)+' com conta de volume válida')+
+    kpi('Margem a preservar',brl0.format(k.margem_dia)+'/dia','margem unitária normal × volume atual dos itens válidos','Soma da margem diária que o encarte precisa manter, loja 20.')+
+    kpi('Volume necessário cabe no histórico',nf.format(k.n_plaus),'abaixo do p90 diário do mês · '+k.n_pico+' exigem pico · '+k.n_acima+' acima do máximo')+
+    kpi('Abaixo do custo',nf.format(k.n_abaixo),'preço de encarte menor que o custo implícito: não compensa com volume')+
+    kpi('Preço divergente',nf.format(k.n_div),'vendem a preço bem diferente da tabela: confira custo e preço');
+  hbars($('#c-esforco'),[...ok].sort((a,b)=>b.ex-a.ex).slice(0,10).map(l=>({l:l.n,v:l.ex,tip:l.n+'\nDesconto '+pc(l.ds)+'\nMargem un.: '+rsf(l.mr)+' → '+rsf(l.me)+'\nVolume: '+dec(l.vb,1)+' → '+dec(l.vn,1)+' un/dia\nAumento: '+pc(l.au,0)})),{fmt:v=>dec(v,1)+' un/dia'});
+  const cont={}; E.produtos.forEach(l=>{const s=l.st==='ok'?l.vi:l.st; cont[s]=(cont[s]||0)+1;});
+  const ordem=['plausível','exige pico','acima do histórico','sem histórico','abaixo do custo','preço divergente','sem desconto','sem venda no mês'];
+  hbars($('#c-viab'),ordem.filter(s=>cont[s]).map(s=>({l:s,v:cont[s],tip:s+'\n'+cont[s]+' produtos'})),{fmt:v=>nf.format(v),cls:'s3'});
+  const rows=prodRows();
+  const cols=[{k:'nome',t:'Produto',f:l=>`<div class="nm" title="${esc(l.n)}"><b>${esc(l.n)}</b></div>`,v:l=>l.n},
+    {k:'cat',t:'Categoria',f:l=>`<div class="nm">${esc(l.cat)}</div>`,v:l=>l.cat},
+    {k:'papel',t:'Papel',f:l=>l.papel==='-'?'<span class="tag mut">—</span>':l.papel.includes('M')?'<span class="tag info">Mãe</span>':'<span class="tag ok">Compl.</span>',v:l=>l.papel},
+    {k:'tab',t:'Preço tabela',r:1,f:l=>rsf(l.tab),v:l=>l.tab??-1},{k:'pv',t:'Preço encarte',r:1,f:l=>rsf(l.pv),v:l=>l.pv??-1},
+    {k:'ds',t:'Desc.',r:1,f:l=>l.ds==null?'—':pc(l.ds),v:l=>l.ds??-1},{k:'cu',t:'Custo',r:1,f:l=>rsf(l.cu),v:l=>l.cu??-1},
+    {k:'mr',t:'Margem un. normal',r:1,f:l=>rsf(l.mr),v:l=>l.mr??-99},{k:'me',t:'Margem un. encarte',r:1,f:l=>`<span class="${l.me!=null&&l.me<=0?'dl dn':''}">${rsf(l.me)}</span>`,v:l=>l.me??-99},
+    {k:'vb',t:'Volume atual (un/dia)',r:1,f:l=>dcf(l.vb,1),v:l=>l.vb??0},
+    {k:'vn',t:'Volume necessário (un/dia)',r:1,f:l=>l.vn==null?'—':`<b>${dec(l.vn,1)}</b>`,v:l=>l.vn??-1},
+    {k:'ex',t:'Vender a mais (un/dia)',r:1,f:l=>l.ex==null?'—':`<b>+${dec(l.ex,1)}</b>`,v:l=>l.ex??-1},
+    {k:'au',t:'Aumento',r:1,f:l=>l.au==null?'—':pc(l.au,0),v:l=>l.au??-1},
+    {k:'p90',t:'p90 diário',r:1,f:l=>dcf(l.p90,1),v:l=>l.p90??-1},{k:'mx',t:'Máx. do mês',r:1,f:l=>dcf(l.mx,0),v:l=>l.mx??-1},
+    {k:'u4',t:'Últ. 4 dias (un/dia)',r:1,f:l=>dcf(l.u4,1),v:l=>l.u4??-1},{k:'pr4',t:'Preço praticado',r:1,f:l=>l.pr4==null?'—':rsf(l.pr4)+(l.ativa?' ✓':''),v:l=>l.pr4??-1},
+    {k:'st',t:'Situação',f:l=>sitTag(l),v:l=>l.st==='ok'?l.vi:l.st}];
+  const res=tabela($('#t-prod'),'prod',cols,rows,{rowCls:l=>'clk'+(S.simId===l.id?' sel':''),rowAttr:l=>`data-sim="${l.id}"`});
+  $('#n-prod').textContent=nf.format(res.total)+' produtos · volume atual = média dos '+E.base.length+' últimos dias úteis normais ('+E.base[0].slice(8)+'/'+E.base[0].slice(5,7)+' a '+E.base[E.base.length-1].slice(8)+'/'+E.base[E.base.length-1].slice(5,7)+') · ✓ = já vendendo ao preço de encarte';
+  if(S.simId===null){const p=[...ok].sort((a,b)=>(b.mt||0)-(a.mt||0))[0]; if(p) escolheSim(p.id,false);} else simula();
+}
+function escolheSim(id,rola){
+  const l=E.produtos.find(x=>x.id===id); if(!l) return; S.simId=id; S.simDs=l.ds||0;
+  $('#sim-preco').value=l.tab??''; $('#sim-custo').value=l.cu??''; $('#sim-vol').value=l.vb??'';
+  $('#sim-sub').textContent=l.n+(l.ds!=null?' · desconto de encarte de '+pc(l.ds):'');
+  if(rola) $('#sim').scrollIntoView({behavior:'smooth',block:'center'});
+  simula(); prodMarca();
+}
+function prodMarca(){ $$('#t-prod tr[data-sim]').forEach(tr=>tr.classList.toggle('sel',+tr.dataset.sim===S.simId)); }
+function simula(){
+  const p=+$('#sim-preco').value, c=+$('#sim-custo').value, v=+$('#sim-vol').value, out=$('#sim-out');
+  if(!(p>0)||!(v>0)||!(c>=0)||c>=p){out.innerHTML='<div class="empty">Informe preço líquido, custo (menor que o preço) e volume atual.</div>';return;}
+  const m0=p-c, ref=m0*v;
+  const ds=[5,10,15,20,25,30]; if(S.simDs>0&&!ds.some(d=>Math.abs(d-S.simDs)<.05)) ds.push(+S.simDs.toFixed(1)); ds.sort((a,b)=>a-b);
+  const mult=[1,1.2,1.5,2,2.5,3];
+  const head=`<th>Desconto / preço</th>`+mult.map(m=>`<th class="r">${dec(v*m,1)} un</th>`).join('')+`<th class="r">Volume necessário</th>`;
+  const body=ds.map(d=>{
+    const pn=p*(1-d/100), mu=pn-c; let achou=false; const eh=Math.abs(d-S.simDs)<.05;
+    const cel=mult.map(m=>{ const tot=mu*v*m; let cl='';
+      if(mu<=0) cl='neg'; else if(tot>=ref*0.999){ cl=achou?'ok':'hit'; achou=true; }
+      return `<td class="r ${cl}" data-tip="${esc(pc(d,1)+' de desconto\n'+dec(v*m,1)+' un/dia\nMargem total: '+brl.format(tot)+'\nReferência: '+brl.format(ref))}">${brl0.format(tot)}</td>`; }).join('');
+    const nec=mu>0?v*m0/mu:null;
+    return `<tr class="${eh?'sel':''}"><td><b>${pc(d,d%1?1:0)}</b> / ${brl.format(pn)}${eh?' <span class="tag info">encarte</span>':''}</td>${cel}<td class="r">${nec==null?'<span class="tag bad">inviável</span>':'<b>'+dec(nec,1)+' un</b> <span style="color:var(--muted)">(+'+dec((m0/mu-1)*100,0)+'%)</span>'}</td></tr>`;}).join('');
+  const dsel=S.simDs>0?S.simDs:10, mu=p*(1-dsel/100)-c;
+  const frase=mu>0?`${pc(dsel,dsel%1?1:0)} de desconto reduz a margem por unidade de ${brl.format(m0)} para ${brl.format(mu)} e exige <b>${dec((m0/mu-1)*100,0)}% mais volume</b>: de ${dec(v,1)} para <b>${dec(v*m0/mu,1)} un/dia</b> só para manter os ${brl.format(ref)}/dia.`:
+    `Com ${pc(dsel,dsel%1?1:0)} de desconto o preço fica no custo ou abaixo: nenhum volume compensa.`;
+  out.innerHTML=`<p style="margin-bottom:12px">Margem de contribuição a preservar: <b>${brl.format(ref)}/dia</b> (margem unitária ${brl.format(m0)} × ${dec(v,1)} un).</p><div class="tw"><table class="t mx"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+  <div class="legend"><span><i style="background:var(--s1)"></i>Preserva a margem (primeiro volume que atinge)</span><span><i style="background:var(--info-bg);border:1px solid var(--s1)"></i>Acima da referência</span><span><i style="background:transparent;border:1px solid var(--axis)"></i>Abaixo da referência</span></div>
+  <p class="note" style="font-size:13px;color:var(--ink-2)">${frase}</p>`;
+}
+
+/* ---------- controle ---------- */
+const PAGES={geral,enc,prod,mae,cat,cesta,tec};
+function alerta(){
+  const er=D.qualidade.filter(x=>x.s==='erro');
+  $('#alerta').innerHTML=er.length?`<div class="alerta" role="alert"><span class="ico erro">✕</span><div><b>Dados incompletos.</b> ${er.map(x=>esc(x.t)+': '+esc(x.x)).join(' ')} <a href="#" data-go="tec">Ver análise técnica</a></div></div>`:'';
+}
+function update(){
+  $$('.page').forEach(p=>p.classList.toggle('on',p.id==='p-'+S.page));
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.p===S.page));
+  const semFiltro=['tec','enc','prod'].includes(S.page); $('.filters').style.display=semFiltro?'none':''; $('#alerta').style.display=semFiltro?'none':'';
+  PAGES[S.page]();
+}
+function chips(){
+  $('#f-dias').innerHTML=D.dias.map((_,i)=>`<button class="chip" type="button" data-d="${i}" aria-pressed="${S.dias.has(i)}">${dl(i)}${D.parcial[i]?'<span class="pt">parcial</span>':''}</button>`).join('')+
+    `<button class="chip" type="button" data-all="1" aria-pressed="false">Todos</button>`+(D.parcial.some(Boolean)?`<button class="chip" type="button" data-full="1" aria-pressed="false">Só completos</button>`:'');
+}
+function init(){
+  $('#sub').textContent=D.meta.loja+' · '+dl(0)+' a '+dl(nDias-1)+' · '+nf.format(D.meta.cupons)+' cupons';
+  $('#rodape').textContent='CONFIDENCIAL · uso interno. Gerado em '+D.meta.gerado+' a partir de '+D.meta.arquivos.join(', ')+'. Não publique este arquivo fora da empresa: ele contém vendas e margens da loja.';
+  $('#f-dep').innerHTML='<option value="-1">Todos</option>'+D.deptos.map((d,i)=>`<option value="${i}">${esc(d)}</option>`).join('');
+  $('#f-tip').innerHTML='<option value="-1">Todos</option>'+D.tipos.map((d,i)=>`<option value="${i}">${esc(d)}</option>`).join('');
+  $('#m-grupo').innerHTML='<option value="">Todos</option>'+grupos.map(g=>`<option>${esc(g)}</option>`).join('');
+  $('#p-forca').innerHTML='<option value="">Todas</option>'+forcas.map(g=>`<option>${esc(g)}</option>`).join('');
+  const opts=D.dias.map((_,i)=>`<option value="${i}">${dl(i)}${D.parcial[i]?' (parcial)':''}</option>`).join('');
+  $('#v-base').innerHTML=opts; $('#v-comp').innerHTML=opts; $('#v-base').value=S.vbase; $('#v-comp').value=S.vcomp;
+  chips(); alerta(); tec(); update();
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(c&&c.closest('#f-dias')){
+    if(c.dataset.all) S.dias=new Set(D.dias.map((_,i)=>i)); else if(c.dataset.full) S.dias=new Set(completos);
+    else{const i=+c.dataset.d; if(S.dias.has(i)&&S.dias.size>1) S.dias.delete(i); else S.dias.add(i);}
+    chips(); update(); return;}
+  const t=e.target.closest('.tab'); if(t){S.page=t.dataset.p; try{localStorage.setItem('cupons.page',S.page);}catch(_){} update(); window.scrollTo({top:0});return;}
+  const g=e.target.closest('[data-go]'); if(g){e.preventDefault();S.page=g.dataset.go;update();window.scrollTo({top:0});return;}
+  const mr=e.target.closest('tr[data-mae]'); if(mr){const id=+mr.dataset.mae;S.maeSel=S.maeSel===id?null:id;mae();$('#h-par').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  if(e.target.id==='mais-cat'){e.preventDefault();S.catLim+=200;cat();}
+});
+$('#f-dep').addEventListener('change',e=>{S.dep=+e.target.value;update();});
+$('#f-tip').addEventListener('change',e=>{S.tip=+e.target.value;update();});
+$('#f-reset').addEventListener('click',()=>{S.dias=new Set(D.dias.map((_,i)=>i));S.dep=S.tip=-1;S.maeSel=null;S.grupo=S.forca=S.status=S.busca=S.buscaMae=S.buscaCat='';
+  ['#f-dep','#f-tip'].forEach(s=>$(s).value='-1');['#m-grupo','#p-forca','#p-status'].forEach(s=>$(s).value='');['#m-busca','#p-busca','#c-busca'].forEach(s=>$(s).value='');chips();update();});
+$('#v-by').addEventListener('change',e=>{S.vby=e.target.value;varDim();});
+$('#v-base').addEventListener('change',e=>{S.vbase=+e.target.value;varDim();});
+$('#v-comp').addEventListener('change',e=>{S.vcomp=+e.target.value;varDim();});
+$('#m-conv').addEventListener('input',e=>{S.conv=+e.target.value;$('#m-conv-v').textContent=S.conv+'%';mae();});
+$('#m-grupo').addEventListener('change',e=>{S.grupo=e.target.value;mae();});
+$('#m-busca').addEventListener('input',e=>{S.buscaMae=e.target.value;mae();});
+$('#p-forca').addEventListener('change',e=>{S.forca=e.target.value;pares();});
+$('#p-status').addEventListener('change',e=>{S.status=e.target.value;pares();});
+$('#p-busca').addEventListener('input',e=>{S.busca=e.target.value;pares();});
+$('#p-limpa').addEventListener('click',()=>{S.maeSel=null;mae();});
+$('#c-busca').addEventListener('input',e=>{S.buscaCat=e.target.value;S.catLim=120;cat();});
+let rz; addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(S.page==='geral'||S.page==='cesta')update();},150);});
+
+/* encarte */
+if(!E){ $$('.tab[data-p="enc"],.tab[data-p="prod"]').forEach(t=>t.style.display='none'); if(['enc','prod'].includes(S.page)) S.page='geral'; }
+else{
+  $('#pr-dep').innerHTML='<option value="">Todos</option>'+[...new Set(E.produtos.map(l=>l.dep).filter(Boolean))].sort().map(d=>`<option>${esc(d)}</option>`).join('');
+  [['#pr-papel','ppapel'],['#pr-sit','psit'],['#pr-dep','pdep']].forEach(([s_,k_])=>$(s_).addEventListener('change',e=>{S[k_]=e.target.value;prod();}));
+  $('#pr-busca').addEventListener('input',e=>{S.pbusca=e.target.value;prod();});
+  ['#sim-preco','#sim-custo','#sim-vol'].forEach(s_=>$(s_).addEventListener('input',simula));
+  document.addEventListener('click',e=>{const tr=e.target.closest('tr[data-sim]'); if(tr) escolheSim(+tr.dataset.sim,true);});
+}
+/* tema */
+function efetivo(){const a=document.documentElement.getAttribute('data-theme');return a||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+function rotulo(){const d=efetivo()==='dark';$('#tema-i').textContent=d?'☀':'☾';$('#tema-t').textContent=d?'Modo claro':'Modo escuro';}
+try{const t=localStorage.getItem('cupons.tema'); if(t) document.documentElement.setAttribute('data-theme',t);}catch(e){}
+$('#tema').addEventListener('click',()=>{const n=efetivo()==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('cupons.tema',n);}catch(e){}rotulo();update();});
+rotulo(); init();
+})();
+</script>
+</body>
+</html>

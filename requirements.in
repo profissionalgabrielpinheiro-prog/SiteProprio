@@ -1,0 +1,7 @@
+# Dependências de execução (versões livres só aqui; o requirements.txt trava versão + hash).
+# Regerar:  pip-compile --generate-hashes --allow-unsafe -o requirements.txt requirements.in
+pandas>=3.0,<4
+numpy>=2.0,<3
+openpyxl>=3.1,<4
+# openpyxl usa defusedxml (se instalado) para bloquear bomba de entidades XML em Excel malicioso.
+defusedxml>=0.7,<1
