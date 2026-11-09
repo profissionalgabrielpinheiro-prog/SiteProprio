@@ -76,3 +76,17 @@ A CI (`.github/workflows`) roda tudo isso a cada push/PR, mais CodeQL e Gitleaks
 
 Repositório **privado**, branch `main` protegida, secret scanning com push protection e **nunca** GitHub
 Pages. O passo a passo completo, com comandos, está em [docs/SEGURANCA.md](docs/SEGURANCA.md#configuração-do-repositório-no-github).
+
+## Publicar com usuário e senha (Cloudflare Pages)
+
+O site gerado embute vendas e margens, então a versão publicada é **cifrada** (AES-256-GCM, chave derivada
+de usuário + senha): `cupons/protecao.py`. Sem a senha o arquivo é só texto cifrado. A senha nunca vai para o Git.
+
+```powershell
+$env:CUPONS_USUARIO = "usuario"; $env:CUPONS_SENHA = "senha-longa-aqui"   # mínimo 8 caracteres
+python -m cupons                                   # gera site/ (aberto) e publico/ (cifrado)
+wrangler pages deploy publico --project-name=cupons-loja20
+```
+
+Publique **somente** a pasta `publico/`, nunca `site/`. Use senha longa: quem baixar o arquivo pode tentar
+adivinhá-la offline.

@@ -16,6 +16,7 @@ Uso:
     python -m cupons caminho\\cupons.xlsx
 """
 import json
+import os
 import re
 import sys
 from collections import Counter, defaultdict
@@ -442,6 +443,12 @@ def main(argv=None, cfg=None):
     cfg.saida.parent.mkdir(parents=True, exist_ok=True)
     cfg.saida.write_text(html, encoding="utf-8")
     (cfg.dados / "agregado.json").write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+    usuario, senha = os.environ.get("CUPONS_USUARIO"), os.environ.get("CUPONS_SENHA")
+    if usuario and senha:   # versão cifrada para publicar (Cloudflare Pages): pasta publico/
+        from .protecao import publicar
+        print(f"Versão protegida: {publicar(cfg.saida, cfg.raiz / 'publico', usuario, senha)}")
+    elif usuario or senha:
+        sys.exit("Defina CUPONS_USUARIO e CUPONS_SENHA juntos.")
     print(f"\nCupons: {N:,} | Venda: {brl(venda_tot)} | Dias: {', '.join(dias)} | Parcial: {parcial}")
     print(f"Pares ativos: {len(pa)} | Mães ativas: {len(ma)} | Pares descobertos: {len(descobertos)}")
     print(f"Site: {cfg.saida}  ({cfg.saida.stat().st_size / 1024:.0f} KB)")

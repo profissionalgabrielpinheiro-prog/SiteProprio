@@ -10,6 +10,8 @@ dados/entrada/*
 
 # O site gerado embute vendas e margens: nunca publicar nem versionar.
 site/
+# versão cifrada para publicar: gerada localmente, nunca versionada.
+publico/
 
 # Formatos que carregam dados de negócio
 *.xlsx

@@ -5,3 +5,5 @@ numpy>=2.0,<3
 openpyxl>=3.1,<4
 # openpyxl usa defusedxml (se instalado) para bloquear bomba de entidades XML em Excel malicioso.
 defusedxml>=0.7,<1
+# cifra o site publicado (AES-GCM) para só abrir com usuário e senha.
+cryptography>=43
