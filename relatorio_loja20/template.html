@@ -42,7 +42,7 @@ main{padding:6px 0 60px}
 .card .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px}
 .card .body{margin-top:12px}
 .kpi .lab{font-size:12px;color:var(--ink-2);font-weight:550}
-.kpi .val{font-size:26px;font-weight:650;letter-spacing:-.02em;margin-top:4px;line-height:1.15}
+.kpi .val{font-size:24px;overflow-wrap:anywhere;font-weight:650;letter-spacing:-.02em;margin-top:4px;line-height:1.15}
 .kpi .foot{font-size:12px;color:var(--muted);margin-top:4px;min-height:18px}
 .tw{overflow:auto;border:1px solid var(--border);border-radius:10px;max-height:560px}
 table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
@@ -85,7 +85,7 @@ ul.l li{margin:3px 0}
 <nav class="tabs"><div class="wrap" role="tablist" id="tabs"></div></nav>
 <main><div class="wrap">
 <section class="page" id="p-sim"></section>
-<section class="page" id="p-resumo"><div id="p-visao"></div><div id="p-perfil"></div></section>
+<section class="page" id="p-resumo"><p class="note"><b>Resultado da simulação</b> · acompanha os filtros da janela Tabela dinâmica</p><div id="kp-sim" class="grid g-kpi"><div class="empty">Abra a Tabela dinâmica para calcular.</div></div><div id="p-visao"></div><div id="p-perfil"></div></section>
 </div></main>
 <script type="application/json" id="dados">__DADOS__</script>
 <script>
@@ -301,7 +301,7 @@ MONTA.sim = () => {
   let limite = 100, S = null;
   let RV = null, RA = null, rPc = 0, rAt = false;
 
-  const kp = h("div", {class: "grid g-kpi"}), tw = h("div", {class: "grid"}), aviso = h("div");
+  const kp = $("#kp-sim"), tw = h("div", {class: "grid"}), aviso = h("div");
   const slider = (min, max, step, val, fmt, onch) => {
     const lab = h("span", {class: "note"}, fmt(val));
     const inp = h("input", {type: "range", min, max, step, value: val, oninput: () => { lab.textContent = fmt(+inp.value); onch(+inp.value); }});
@@ -332,7 +332,7 @@ MONTA.sim = () => {
       h("div", {class: "chips"},
         h("button", {class: "chip", type: "button", onclick: () => { expandir(true); }}, "Expandir tudo"),
         h("button", {class: "chip", type: "button", onclick: () => { aberto.clear(); render(); }}, "Recolher tudo")))));
-  pg.append(aviso, kp, tw);
+  pg.append(aviso, tw);
   pg.append(h("p", {class: "note"}, "Como ler: cada cupom mostra a nossa venda, quanto aquela mesma compra custaria no concorrente e a economia = nossa venda − venda no concorrente. Valor positivo (+, verde) = comprar no concorrente sairia mais barato; negativo (−, vermelho) = o Mateus foi mais barato, ou seja, não haveria economia. O preço do concorrente é a moda do mercado (preço mais comum entre os concorrentes selecionados; se nenhum se repete, a mediana) ou o menor preço, à sua escolha. Preços de concorrente ≤ 0 ou fora da faixa de compatibilidade com o preço do PDV Mateus são descartados. Itens fora da pesquisa, fora da faixa de preço ou sem preço de concorrente não entram na comparação e ficam ao preço do Mateus no total estimado do cupom. Cobertura = % do valor do cupom que pôde ser comparado."));
 
   // 0 = comparado; 1 = fora da pesquisa; 2 = preço vendido fora da faixa; 3 = concorrente sem preço
