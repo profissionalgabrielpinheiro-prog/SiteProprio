@@ -20,6 +20,9 @@ SAIDA = AQUI / "Relatorio Loja 20.html"
 # critério de alto giro (mesmo da planilha Produtos Alto Giro.xlsx)
 MIN_DIAS, MIN_CUPONS = 5, 6
 
+# tipos de preço da pesquisa considerados (filtro do Power BI)
+TIPOS_VALIDOS = ["1-PRECO REGULAR", "6-PONTO EXTRA"]
+
 # Valores calculados pelas medidas do Power BI (tabela _Medidas), para conferir com o Python.
 # Ficam num arquivo LOCAL (fora do Git, pois são totais de venda). Sem o arquivo, a conferência é omitida.
 _MODELO_JSON = AQUI / "validacao_modelo.json"
@@ -45,7 +48,9 @@ def ler_pesquisa() -> pd.DataFrame:
         p[n] = p[n].astype(float)
     p["dt"] = pd.to_datetime(p["PESQUISADATA"], dayfirst=True)
     p["conc"] = p["EMPRESACONCORRENTE"].str.split(" - ", n=1).str[1]
-    p["tipo"] = p["Tipo"].str.split("-", n=1).str[1].str.strip().fillna("SEM TIPO")
+    # mesmo filtro aplicado no Power BI: só preço regular e ponto extra
+    p = p[p["Tipo"].isin(TIPOS_VALIDOS)].copy()
+    p["tipo"] = p["Tipo"].str.split("-", n=1).str[1].str.strip()
     return p
 
 
@@ -104,6 +109,10 @@ def main() -> None:
     q0 = c[c["QTD"] <= 0]
     dup = int(c.duplicated(["CUPOM", "id"]).sum())
     razao = (L["preco"] / L["pdv_var"])
+    # compatibilidade: preço do concorrente x preço do PDV Mateus (faixa padrão ±50%)
+    pcx = pc[pc["var"] > 0].merge(ref[["pdv_var"]], left_on="id", right_index=True)
+    pcx = pcx[pcx["pdv_var"] > 0]
+    inc = (pcx["var"] / pcx["pdv_var"] - 1).abs() > 0.5
     perfil = {
         "cupons": {"linhas": len(c), "cupons": n_cupons, "produtos": len(g), "lojas": int(c["LOJA"].nunique()),
                    "pdvs": int(c["PDV"].nunique()), "dias": n_dias,
@@ -121,6 +130,8 @@ def main() -> None:
                    "linhas_comparaveis": int(len(razao)),
                    "linhas_fora_50pct": int(((razao < 0.5) | (razao > 1.5)).sum()),
                    "produtos_pdv_igual_atacado": int((g["pdv_var"] == g["pdv_atac"]).sum()),
+                   "conc_precos": int(len(pcx)), "conc_incompativeis": int(inc.sum()),
+                   "conc_zerados": int((pc["var"] <= 0).sum()),
                    "linhas_tier_atacado": int(L["tier"].sum())},
         "cobertura_pesquisa_dias": [{"data": f"{k:%d/%m}", "linhas": int(v)}
                                     for k, v in p.groupby("dt").size().items()],
