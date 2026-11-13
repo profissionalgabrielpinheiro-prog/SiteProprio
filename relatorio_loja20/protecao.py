@@ -9,6 +9,7 @@ Limites honestos: quem baixar o arquivo pode tentar adivinhar a senha offline. P
 senha longa e não a reaproveite. A senha NUNCA fica no código nem no Git (variáveis de ambiente).
 """
 import base64
+import gzip
 import hashlib
 import os
 from pathlib import Path
@@ -64,7 +65,7 @@ document.getElementById("f").addEventListener("submit",async e=>{
     const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(d.s),iterations:+d.n,hash:"SHA-256"},
       base,{name:"AES-GCM",length:256},false,["decrypt"]);
     const claro=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(d.i),additionalData:enc.encode("__AAD__")},key,b64(d.c));
-    const html=new TextDecoder().decode(claro);
+    const html=await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
     document.open(); document.write(html); document.close();
   }catch(_){
     msg.textContent="Usu"+String.fromCharCode(225)+"rio ou senha incorretos."; btn.disabled=false;
@@ -108,7 +109,8 @@ def proteger(html: str, usuario: str, senha: str) -> str:
         raise ValueError("Usuário vazio ou senha com menos de 8 caracteres.")
     sal, iv = os.urandom(16), os.urandom(12)
     chave = hashlib.pbkdf2_hmac("sha256", (usuario.strip().lower() + "\0" + senha).encode("utf-8"), sal, ITERACOES, 32)
-    cifra = AESGCM(chave).encrypt(iv, html.encode("utf-8"), _AAD)
+    # comprime antes de cifrar (depois de cifrado não comprime mais): o relatório tem ~1 milhão de linhas
+    cifra = AESGCM(chave).encrypt(iv, gzip.compress(html.encode("utf-8"), 9, mtime=0), _AAD)
     b = lambda x: base64.b64encode(x).decode("ascii")  # noqa: E731
     login = (_LOGIN.replace("__AAD__", _AAD.decode()).replace("__SAL__", b(sal)).replace("__IV__", b(iv))
              .replace("__ITER__", str(ITERACOES)).replace("__CIFRA__", b(cifra)))

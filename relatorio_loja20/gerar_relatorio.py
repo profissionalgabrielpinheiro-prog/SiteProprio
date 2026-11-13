@@ -1,24 +1,28 @@
 """Gera o relatório HTML dinâmico da Loja 20 (venda x pesquisa x economia).
 
 Uso:  python gerar_relatorio.py
-Lê os CSVs exportados do Power BI, recalcula tudo em Python (conferindo com o modelo)
+Lê a tabela de cupons ("cupom - 20.csv", uma linha por cupom x produto), o cadastro de produtos
+("produtos.csv") e a pesquisa de preços (1067), recalcula tudo em Python (conferindo com o modelo)
 e grava `Relatorio Loja 20.html` (arquivo único, sem dependências externas).
 """
 import base64
 import hashlib
 import json
+import math
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 AQUI = Path(__file__).resolve().parent
 BASE = AQUI.parent
-CSV_CUPONS = BASE / "561 - Cupons" / "tmp" / "561 - Cupons.csv"
+CSV_CUPONS = BASE / "cupom - 20.csv"          # id_cupom, dia, codigo_pdv, id_produto, qtd_vendida, preco_total
+CSV_PRODUTOS = BASE / "produtos.csv"          # id_produto, produto, setor, categoria (do dim_produto do modelo)
 CSV_PESQ = BASE / "1067 - Loja 20 1 a 12" / "tmp" / "1067 - Loja 20.csv"
 SAIDA = AQUI / "Relatorio Loja 20.html"
 
-# critério de alto giro (mesmo da planilha Produtos Alto Giro.xlsx)
-MIN_DIAS, MIN_CUPONS = 5, 6
+# Alto giro (proporcional ao período): vendeu em pelo menos metade dos dias E em pelo menos 0,1% dos cupons.
+PCT_DIAS, PCT_CUPONS = 0.5, 0.001
 
 # tipos de preço da pesquisa considerados (filtro do Power BI)
 TIPOS_VALIDOS = ["1-PRECO REGULAR", "6-PONTO EXTRA"]
@@ -30,14 +34,15 @@ MODELO = json.loads(_MODELO_JSON.read_text(encoding="utf-8")) if _MODELO_JSON.ex
 
 
 def ler_cupons() -> pd.DataFrame:
-    c = pd.read_csv(CSV_CUPONS, sep="|", dtype=str, encoding="cp1252")
-    c["QTD"] = c["QTD"].str.replace(".", "", regex=False).astype(int)
-    c["Vlr"] = c["VlrVenda"].str.replace(".", "", regex=False).str.replace(",", ".", regex=False).astype(float)
-    c["id"] = c["PRODUTO"].str.split(" - ", n=1).str[0].astype(int)
-    c["nome"] = c["PRODUTO"].str.split(" - ", n=1).str[1]
-    c["data"] = pd.to_datetime(c["DIA"].str.split(" - ", n=1).str[1], format="%d/%m/%Y")
-    c["setor"] = c["SETOR"].str.split(" - ", n=1).str[1].fillna(c["SETOR"])
-    c["categoria"] = c["CATEGORIA"].str.split(" - ", n=1).str[1].fillna(c["CATEGORIA"])
+    c = pd.read_csv(CSV_CUPONS, dtype={"id_cupom": str, "codigo_pdv": str, "id_produto": int})
+    c = c.rename(columns={"id_cupom": "CUPOM", "codigo_pdv": "PDV", "qtd_vendida": "QTD", "preco_total": "Vlr",
+                          "id_produto": "id"})
+    c["data"] = pd.to_datetime(c["dia"], format="%Y-%m-%d")
+    prod = pd.read_csv(CSV_PRODUTOS, dtype={"id_produto": int}).rename(
+        columns={"id_produto": "id", "produto": "nome"}).drop_duplicates("id")
+    c = c.merge(prod, on="id", how="left")
+    for col, padrao in (("nome", "(produto sem cadastro)"), ("setor", "SEM SETOR"), ("categoria", "SEM CATEGORIA")):
+        c[col] = c[col].fillna(padrao)
     return c
 
 
@@ -54,10 +59,16 @@ def ler_pesquisa() -> pd.DataFrame:
     return p
 
 
+def _num(x: float):
+    """Número enxuto para o JSON (inteiro quando possível)."""
+    return int(x) if float(x).is_integer() else x
+
+
 def main() -> None:
     c = ler_cupons()
     p = ler_pesquisa()
     n_cupons, n_dias = c["CUPOM"].nunique(), c["data"].nunique()
+    min_dias, min_cupons = math.ceil(PCT_DIAS * n_dias), math.ceil(PCT_CUPONS * n_cupons)
 
     # ---------- produtos (lado venda) ----------
     ok = c[c["QTD"] > 0]
@@ -65,7 +76,7 @@ def main() -> None:
                             cupons=("CUPOM", "nunique"), dias=("data", "nunique"),
                             valor=("Vlr", "sum")).reset_index()
     g = g.merge(ok.groupby("id")["QTD"].sum().rename("unid"), on="id", how="left").fillna({"unid": 0})
-    g["alto"] = ((g["dias"] >= MIN_DIAS) & (g["cupons"] >= MIN_CUPONS)).astype(int)
+    g["alto"] = ((g["dias"] >= min_dias) & (g["cupons"] >= min_cupons)).astype(int)
 
     # ---------- referência Mateus na pesquisa (última data de cada produto) ----------
     ult = p.groupby("id")["dt"].transform("max")
@@ -84,22 +95,31 @@ def main() -> None:
     tipos = sorted(pc["tipo"].unique())
     idx = {pid: i for i, pid in enumerate(g["id"])}
 
-    # ---------- linhas de venda para a simulação ----------
-    L = ok[ok["id"].isin(ref.index)].copy()
-    L = L.merge(ref[["pdv_var", "pdv_atac"]], left_on="id", right_index=True)
+    # ---------- linhas de venda (todas; as sem pesquisa ficam sem preço de referência) ----------
+    L = ok.merge(ref[["pdv_var", "pdv_atac"]], left_on="id", right_index=True, how="left")
     L["preco"] = L["Vlr"] / L["QTD"]
     # "tier atacado": a linha foi vendida pelo preço de atacado (e atacado < varejo)
     L["tier"] = ((L["pdv_atac"] < L["pdv_var"]) & (L["preco"] <= L["pdv_atac"] * 1.005)).astype(int)
     cup = c.groupby("CUPOM").agg(dia=("data", "min"), pdv=("PDV", "first"), itens=("id", "size"),
-                                 valor=("Vlr", "sum")).reset_index()
+                                 valor=("Vlr", "sum")).reset_index().sort_values(["dia", "CUPOM"], kind="stable")
     cix = {k: i for i, k in enumerate(cup["CUPOM"])}
-    cupons = [[r.CUPOM, f"{r.dia:%d/%m}", r.pdv, int(r.itens), round(float(r.valor), 2)] for r in cup.itertuples()]
-    linhas = [[idx[r.id], int(r.QTD), round(float(r.Vlr), 2), int(r.tier), cix[r.CUPOM]] for r in L.itertuples()]
+    L["ci"] = L["CUPOM"].map(cix)
+    L = L.sort_values("ci", kind="stable")                      # linhas agrupadas por cupom (sem coluna de cupom)
+    nl = L.groupby("ci").size().reindex(range(len(cup)), fill_value=0)
+    dias = sorted(c["data"].unique())
+    dia_idx = {d: i for i, d in enumerate(dias)}
+    cupons = {"id": [int(x) for x in cup["CUPOM"]], "d": [dia_idx[d] for d in cup["dia"]],
+              "pdv": [int(x) for x in cup["pdv"]], "it": cup["itens"].astype(int).tolist(),
+              "v": np.rint(cup["valor"].to_numpy() * 100).astype(np.int64).tolist(), "n": nl.astype(int).tolist()}
+    linhas = {"p": L["id"].map(idx).astype(int).tolist(),
+              "q": [_num(x) for x in np.round(L["QTD"].to_numpy(), 3)],
+              "v": np.rint(L["Vlr"].to_numpy() * 100).astype(np.int64).tolist(),
+              "t": L["tier"].astype(int).tolist()}
 
     # ---------- conferência com o modelo ----------
     dentro = int((g["fora"] == 0).sum())
     py = {"Qtd Cupons": n_cupons, "Produtos Vendidos": len(g), "Produtos Vendidos Dentro Pesquisa": dentro,
-          "Produtos Vendidos Fora Pesquisa": len(g) - dentro, "Unidades Vendidas": int(ok["QTD"].sum()),
+          "Produtos Vendidos Fora Pesquisa": len(g) - dentro, "Unidades Vendidas": round(float(ok["QTD"].sum()), 2),
           "Valor Vendido": round(float(c["Vlr"].sum()), 2),
           "Valor Dentro Pesquisa": round(float(g.loc[g["fora"] == 0, "valor"].sum()), 2)}
     validacao = [{"medida": k, "modelo": MODELO[k], "python": py[k], "ok": abs(MODELO[k] - py[k]) < 0.05}
@@ -108,17 +128,19 @@ def main() -> None:
     # ---------- perfil dos dados ----------
     q0 = c[c["QTD"] <= 0]
     dup = int(c.duplicated(["CUPOM", "id"]).sum())
-    razao = (L["preco"] / L["pdv_var"])
+    Lr = L[L["pdv_var"] > 0]
+    razao = (Lr["preco"] / Lr["pdv_var"])
     # compatibilidade: preço do concorrente x preço do PDV Mateus (faixa padrão ±50%)
     pcx = pc[pc["var"] > 0].merge(ref[["pdv_var"]], left_on="id", right_index=True)
     pcx = pcx[pcx["pdv_var"] > 0]
     inc = (pcx["var"] / pcx["pdv_var"] - 1).abs() > 0.5
     perfil = {
-        "cupons": {"linhas": len(c), "cupons": n_cupons, "produtos": len(g), "lojas": int(c["LOJA"].nunique()),
+        "cupons": {"linhas": len(c), "cupons": n_cupons, "produtos": len(g), "lojas": int(c["id_filial"].nunique()),
                    "pdvs": int(c["PDV"].nunique()), "dias": n_dias,
                    "de": f"{c['data'].min():%d/%m/%Y}", "ate": f"{c['data'].max():%d/%m/%Y}",
                    "duplicados_cupom_produto": dup, "qtd_zero": len(q0), "qtd_zero_valor": round(float(q0["Vlr"].sum()), 2),
-                   "nulos_id_produto": int(c["id"].isna().sum()), "loja": c["LOJA"].iat[0]},
+                   "nulos_id_produto": int(c["id"].isna().sum()), "loja": p["FILIAL"].iat[0],
+                   "sem_cadastro": int((c["nome"] == "(produto sem cadastro)").sum())},
         "pesquisa": {"linhas": len(p), "produtos": int(p["id"].nunique()), "concorrentes": len(concs),
                      "filiais_concorrentes": int(p["FILIALCONCORRENTE"].nunique()), "datas": int(p["dt"].nunique()),
                      "de": f"{p['dt'].min():%d/%m/%Y}", "ate": f"{p['dt'].max():%d/%m/%Y}",
@@ -137,8 +159,8 @@ def main() -> None:
                                     for k, v in p.groupby("dt").size().items()],
     }
 
-    cfg = {"min_dias": MIN_DIAS, "min_cupons": MIN_CUPONS}
-    produtos = [[int(r.id), r.nome, r.setor, r.categoria, int(r.cupons), int(r.dias), int(r.unid),
+    cfg = {"min_dias": min_dias, "min_cupons": min_cupons}
+    produtos = [[int(r.id), r.nome, r.setor, r.categoria, int(r.cupons), int(r.dias), _num(round(float(r.unid), 3)),
                  round(float(r.valor), 2), int(r.fora), int(r.alto),
                  None if pd.isna(r.pdv_var) else round(float(r.pdv_var), 2),
                  None if pd.isna(r.pdv_atac) else round(float(r.pdv_atac), 2),
@@ -148,7 +170,7 @@ def main() -> None:
 
     dados = {"gerado": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"), "cfg": cfg, "perfil": perfil,
              "validacao": validacao, "concs": concs, "tipos": tipos, "produtos": produtos, "pc": pcl,
-             "linhas": linhas, "cupons": cupons}
+             "dias": [f"{pd.Timestamp(d):%d/%m}" for d in dias], "linhas": linhas, "cupons": cupons}
     js = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     js = js.replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
 

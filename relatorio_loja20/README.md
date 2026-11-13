@@ -1,6 +1,6 @@
 # Relatório Loja 20: venda × pesquisa × economia
 
-Gera um HTML único e dinâmico a partir de dois CSVs exportados do Power BI (cupons e pesquisa de preços):
+Gera um HTML único e dinâmico a partir da tabela de cupons (cupom - 20.csv), do cadastro de produtos (produtos.csv) e da pesquisa de preços (1067):
 cobertura da pesquisa, preço de venda × preço da pesquisa, simulador de economia por item e
 "quanto cada cupom custaria no concorrente".
 
@@ -37,3 +37,6 @@ mostra a conferência modelo × Python na aba "Visão geral".
 ## Requisitos
 
 `pandas` para gerar o relatório; `cryptography` para cifrar.
+
+O site tem 2 janelas: **Tabela dinâmica** (cupom → produtos, com nossa venda, venda no concorrente e economia +/−) e **Resumo e dados**.
+Os dados são gzip + AES-GCM; o navegador precisa suportar DecompressionStream (Edge, Chrome, Safari 16.4+, Firefox 113+).
