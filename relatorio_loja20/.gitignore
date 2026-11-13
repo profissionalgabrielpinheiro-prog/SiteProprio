@@ -1,0 +1,19 @@
+# Dados e saídas com dados da empresa: nunca versionar
+Relatorio Loja 20.html
+publico/
+validacao_modelo.json
+*.csv
+*.xlsx
+*.zip
+*.pbix
+__pycache__/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+.wrangler/
+wrangler.jsonc
+wrangler.toml

@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Loja 20 · Venda × Pesquisa × Economia</title>
+<style>
+:root{color-scheme:light;--bg:#f4f4f1;--surface:#fcfcfb;--surface-2:#f4f4f1;--ink:#0b0b0b;--ink-2:#52514e;--muted:#76746e;--grid:#e1e0d9;--border:rgba(11,11,11,.10);--hover:rgba(11,11,11,.04);--accent:#2a78d6;--on-accent:#fff;--good:#006300;--bad:#c42f2f;--warn:#8a5a00;--good-bg:rgba(12,163,12,.12);--bad-bg:rgba(208,59,59,.12);--warn-bg:rgba(250,178,25,.22);--info-bg:rgba(42,120,214,.10);--bar:#2a78d6;--bar2:#1baf7a;--bar3:#eb6834;--shadow:0 1px 2px rgba(11,11,11,.05),0 4px 14px rgba(11,11,11,.04)}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0d0d0d;--surface:#1a1a19;--surface-2:#232321;--ink:#f0efec;--ink-2:#c3c2b7;--muted:#9a988f;--grid:#2c2c2a;--border:rgba(255,255,255,.10);--hover:rgba(255,255,255,.05);--accent:#3987e5;--good:#2bc02b;--bad:#e66767;--warn:#f0b43a;--good-bg:rgba(12,163,12,.18);--bad-bg:rgba(230,103,103,.18);--warn-bg:rgba(250,178,25,.16);--info-bg:rgba(57,135,229,.16);--bar:#3987e5;--bar2:#199e70;--bar3:#d95926;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,p{margin:0}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+.top{background:var(--surface);border-bottom:1px solid var(--border)}
+.top .wrap{padding-top:14px;padding-bottom:14px}
+.top h1{font-size:18px;font-weight:650}
+.top p{color:var(--ink-2);font-size:12.5px}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tab{border:0;background:none;padding:13px 14px;cursor:pointer;color:var(--ink-2);font-weight:550;border-bottom:2px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,select:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filters{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;padding:14px 0 2px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg>label,.fg>span.l{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+select,input[type=search],input[type=number]{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 10px;min-width:160px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 11px;cursor:pointer;font-size:13px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+main{padding:6px 0 60px}
+.page{display:none}
+.page.on{display:block}
+.grid{display:grid;gap:14px;margin-top:14px}
+.g-kpi{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g-2{grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:14.5px;font-weight:650}
+.card .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px}
+.card .body{margin-top:12px}
+.kpi .lab{font-size:12px;color:var(--ink-2);font-weight:550}
+.kpi .val{font-size:26px;font-weight:650;letter-spacing:-.02em;margin-top:4px;line-height:1.15}
+.kpi .foot{font-size:12px;color:var(--muted);margin-top:4px;min-height:18px}
+.tw{overflow:auto;border:1px solid var(--border);border-radius:10px;max-height:560px}
+table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.t th{position:sticky;top:0;background:var(--surface-2);text-align:left;padding:9px 12px;font-weight:600;font-size:12px;color:var(--ink-2);border-bottom:1px solid var(--border);white-space:nowrap;z-index:1}
+.t th[data-k]{cursor:pointer;user-select:none}
+.t td{padding:8px 12px;border-bottom:1px solid var(--grid);white-space:nowrap}
+.t tbody tr:hover td{background:var(--hover)}
+.t tr.clk{cursor:pointer}
+.t tr.sel td{background:var(--info-bg)}
+.t .r{text-align:right}.t th.r{text-align:right}
+.t td.w{white-space:normal;min-width:240px;color:var(--ink-2)}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--good-bg);color:var(--good)}.tag.bad{background:var(--bad-bg);color:var(--bad)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.mut{background:var(--hover);color:var(--ink-2)}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.alerta{margin:12px 0 0;border:1px solid var(--border);border-left:4px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:10px 14px;font-size:13px}
+.alerta.bad{border-left-color:var(--bad);background:var(--bad-bg)}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:minmax(90px,200px) 1fr 110px;gap:10px;align-items:center;font-size:12.5px}
+.bar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+.bar .tr{background:var(--surface-2);border-radius:5px;height:14px;overflow:hidden}
+.bar .fl{height:100%;background:var(--bar);border-radius:5px}
+.bar .fl.b2{background:var(--bar2)}.bar .fl.b3{background:var(--bar3)}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+ul.l{margin:8px 0 0;padding-left:18px;color:var(--ink-2);font-size:13px}
+ul.l li{margin:3px 0}
+.empty{color:var(--muted);padding:18px;text-align:center}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<h1>Loja 20 · Venda × Pesquisa × Economia</h1>
+<p id="sub"></p>
+</div></header>
+<nav class="tabs"><div class="wrap" role="tablist" id="tabs"></div></nav>
+<main><div class="wrap">
+<section class="page" id="p-visao"></section>
+<section class="page" id="p-perfil"></section>
+<section class="page" id="p-pesq"></section>
+<section class="page" id="p-preco"></section>
+<section class="page" id="p-sim"></section>
+<section class="page" id="p-cup"></section>
+</div></main>
+<script type="application/json" id="dados">__DADOS__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("dados").textContent);
+const brl = new Intl.NumberFormat("pt-BR", {style: "currency", currency: "BRL"});
+const n0 = new Intl.NumberFormat("pt-BR", {maximumFractionDigits: 0});
+const n2 = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pct = (v, d = 1) => v == null || !isFinite(v) ? "–" : (v * 100).toLocaleString("pt-BR", {minimumFractionDigits: d, maximumFractionDigits: d}) + "%";
+const $ = s => document.querySelector(s);
+
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const k in props) {
+    if (k === "class") e.className = props[k];
+    else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), props[k]);
+    else e.setAttribute(k, props[k]);
+  }
+  for (const kid of kids.flat()) { if (kid == null) continue; e.append(kid.nodeType ? kid : document.createTextNode(String(kid))); }
+  return e;
+}
+const tag = (txt, cls) => h("span", {class: "tag " + cls}, txt);
+function card(titulo, sub, body) {
+  return h("div", {class: "card"}, h("h2", null, titulo), sub ? h("p", {class: "sub"}, sub) : null, h("div", {class: "body"}, body));
+}
+function kpi(lab, val, foot) {
+  return h("div", {class: "card kpi"}, h("div", {class: "lab"}, lab), h("div", {class: "val"}, val), h("div", {class: "foot"}, foot || ""));
+}
+function bars(itens, cls) {
+  const max = Math.max(...itens.map(i => i.v), 1e-9);
+  return h("div", {class: "bars"}, itens.map(i => h("div", {class: "bar"},
+    h("div", {class: "nm", title: i.nm}, i.nm),
+    h("div", {class: "tr"}, h("div", {class: "fl " + (cls || ""), style: "width:" + Math.max(0, i.v / max * 100).toFixed(1) + "%"})),
+    h("div", {class: "v"}, i.txt))));
+}
+// tabela ordenável: cols [{k,label,r,f}], rows [obj]
+function tabela(cols, rows, limite, ordemIni, onrow) {
+  let sk = ordemIni ? ordemIni[0] : null, sd = ordemIni ? ordemIni[1] : -1;
+  const tb = h("tbody"), th = h("tr");
+  function pinta() {
+    const v = rows.slice();
+    if (sk) v.sort((a, b) => { const x = a[sk], y = b[sk]; if (x == null) return 1; if (y == null) return -1; return (typeof x === "string" ? x.localeCompare(y, "pt-BR") : x - y) * sd; });
+    tb.replaceChildren();
+    if (!v.length) { tb.append(h("tr", null, h("td", {colspan: cols.length, class: "empty"}, "Nenhum registro com os filtros atuais."))); return; }
+    for (const r of v.slice(0, limite || 200)) {
+      const tr = h("tr", onrow ? {class: "clk", tabindex: "0", onclick: () => onrow(r)} : null, cols.map(c => {
+        const val = c.f ? c.f(r[c.k], r) : r[c.k];
+        return h("td", {class: (c.r ? "r " : "") + (c.w ? "w" : "")}, val);
+      }));
+      tb.append(tr);
+    }
+    if (v.length > (limite || 200)) tb.append(h("tr", null, h("td", {colspan: cols.length, class: "empty"}, "Mostrando " + (limite || 200) + " de " + n0.format(v.length) + " — use os filtros ou a busca para refinar.")));
+  }
+  for (const c of cols) th.append(h("th", {class: c.r ? "r" : "", "data-k": c.k, tabindex: "0", onclick: () => { if (sk === c.k) sd = -sd; else { sk = c.k; sd = c.r ? -1 : 1; } pinta(); }}, c.label));
+  pinta();
+  return h("div", {class: "tw"}, h("table", {class: "t"}, h("thead", null, th), tb));
+}
+function sel(label, opcoes, onch) {
+  const s = h("select", {onchange: () => onch(s.value)}, opcoes.map(o => h("option", {value: o[0]}, o[1])));
+  return {el: h("div", {class: "fg"}, h("label", null, label), s), s};
+}
+function chips(label, nomes, ativos, onch) {
+  const box = h("div", {class: "chips"});
+  nomes.forEach((n, i) => {
+    const b = h("button", {class: "chip", type: "button", "aria-pressed": ativos.has(i) ? "true" : "false", onclick: () => {
+      if (ativos.has(i)) ativos.delete(i); else ativos.add(i);
+      b.setAttribute("aria-pressed", ativos.has(i) ? "true" : "false"); onch();
+    }}, n);
+    box.append(b);
+  });
+  return h("div", {class: "fg"}, h("span", {class: "l"}, label), box);
+}
+function busca(onch) {
+  const i = h("input", {type: "search", placeholder: "Buscar produto ou código…", oninput: () => onch(i.value.trim().toLowerCase())});
+  return h("div", {class: "fg"}, h("label", null, "Busca"), i);
+}
+
+// ---------- dados ----------
+const P = D.produtos.map(a => ({id: a[0], nome: a[1], setor: a[2], cat: a[3], cupons: a[4], dias: a[5], unid: a[6], valor: a[7],
+  fora: a[8], alto: a[9], pdvVar: a[10], pdvAtac: a[11], custo: a[12]}));
+const NC = D.concs.length;
+const PC = P.map(() => []);
+for (const r of D.pc) PC[r[0]].push({c: r[1], v: r[2], a: r[3], t: r[4], dt: r[5]});
+const lq = new Float64Array(P.length), lv = new Float64Array(P.length);
+for (const l of D.linhas) { lq[l[0]] += l[1]; lv[l[0]] += l[2]; }
+const setores = [...new Set(P.map(p => p.setor))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+const optSetor = [["", "Todos os setores"], ...setores.map(s => [s, s])];
+const match = (p, q) => !q || p.nome.toLowerCase().includes(q) || String(p.id).includes(q);
+
+$("#sub").textContent = D.perfil.cupons.loja + " · cupons de " + D.perfil.cupons.de + " a " + D.perfil.cupons.ate +
+  " · pesquisa de " + D.perfil.pesquisa.de + " a " + D.perfil.pesquisa.ate + " · gerado em " + D.gerado;
+
+// ---------- abas ----------
+const ABAS = [["visao", "Visão geral"], ["perfil", "Perfil dos dados"], ["pesq", "Pesquisa × Venda"], ["preco", "Preço × Pesquisa"], ["sim", "Simulador de economia"], ["cup", "Cupom no concorrente"]];
+const feito = {};
+function abrir(id) {
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.id === id ? "true" : "false"));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === "p-" + id));
+  if (!feito[id]) { feito[id] = true; MONTA[id](); }
+  history.replaceState(null, "", "#" + id);
+}
+for (const [id, nome] of ABAS) $("#tabs").append(h("button", {class: "tab", role: "tab", "data-id": id, onclick: () => abrir(id)}, nome));
+
+const MONTA = {};
+
+// ================= VISÃO GERAL =================
+MONTA.visao = () => {
+  const pg = $("#p-visao"), pf = D.perfil, tot = P.reduce((s, p) => s + p.valor, 0);
+  const dentro = P.filter(p => !p.fora), vdentro = dentro.reduce((s, p) => s + p.valor, 0);
+  pg.append(h("div", {class: "grid g-kpi"},
+    kpi("Cupons distintos", n0.format(pf.cupons.cupons), pf.cupons.dias + " dias · " + pf.cupons.pdvs + " PDVs"),
+    kpi("Produtos vendidos", n0.format(P.length), "ids distintos nos cupons"),
+    kpi("Dentro da pesquisa", pct(dentro.length / P.length), n0.format(dentro.length) + " produtos"),
+    kpi("Valor dentro da pesquisa", pct(vdentro / tot), brl.format(vdentro) + " de " + brl.format(tot)),
+    kpi("Alto giro", n0.format(P.filter(p => p.alto).length), "≥ " + D.cfg.min_dias + " dias e ≥ " + D.cfg.min_cupons + " cupons")));
+
+  const rel = [["561 - Cupons[id_produto_num]", "dim_produto[id_produto]", "muitos → um"], ["1067 - Loja 20[id_produto_num]", "dim_produto[id_produto]", "muitos → um"]];
+  pg.append(h("div", {class: "grid g-2"},
+    card("1. Relações criadas", "Cupons e pesquisa ficam ligados pela dimensão de produtos (modelo em estrela).", [
+      tabela([{k: "a", label: "De"}, {k: "b", label: "Para"}, {k: "c", label: "Cardinalidade"}], rel.map(r => ({a: r[0], b: r[1], c: r[2]}))),
+      h("p", {class: "note"}, "O id_produto é texto nos fatos e número em dim_produto. Foi criada a coluna oculta id_produto_num (VALUE do texto) em cada fato. Só Calculate foi usado, nunca refresh Full. Todos os ids dos fatos existem na dimensão (0 órfãos).")]),
+    card("2. Validação modelo × Python", "Os mesmos números calculados pelas medidas do Power BI e recalculados do CSV.",
+      tabela([{k: "medida", label: "Medida"}, {k: "modelo", label: "Modelo", r: 1, f: v => n2.format(v)}, {k: "python", label: "Python", r: 1, f: v => n2.format(v)},
+        {k: "ok", label: "Status", f: v => v ? tag("confere", "ok") : tag("diverge", "bad")}], D.validacao))));
+
+  const med = [
+    ["1 Cupons", "Qtd Cupons", "Cupons distintos."], ["1 Cupons", "Produtos Vendidos", "Produtos distintos vendidos."],
+    ["1 Cupons", "Unidades Vendidas", "Soma da quantidade."], ["1 Cupons", "Valor Vendido", "Soma do valor de venda."],
+    ["1 Cupons", "Produtos por Cupom", "Média de produtos distintos por cupom."], ["1 Cupons", "Unidades por Cupom", "Unidades ÷ cupons."],
+    ["1 Cupons", "Penetração do Produto", "% dos cupons que contêm o produto."],
+    ["2 Pesquisa", "Status Pesquisa", "Dentro / Fora / Parcial por produto."],
+    ["2 Pesquisa", "Produtos Vendidos Dentro Pesquisa", "Vendidos com linha na 1067."], ["2 Pesquisa", "Produtos Vendidos Fora Pesquisa", "Vendidos sem linha na 1067."],
+    ["2 Pesquisa", "% Produtos Dentro Pesquisa", "Dentro ÷ vendidos."], ["2 Pesquisa", "% Produtos Fora Pesquisa", "Fora ÷ vendidos."],
+    ["2 Pesquisa", "Valor Dentro Pesquisa", "Valor vendido dos produtos pesquisados."], ["2 Pesquisa", "Valor Fora Pesquisa", "Valor dos não pesquisados."],
+    ["2 Pesquisa", "% Valor Dentro Pesquisa", "Valor dentro ÷ valor vendido."]];
+  pg.append(h("div", {class: "grid"}, card("3. Medidas na tabela calculada _Medidas", "Todas as 15 medidas ficam numa única tabela, organizadas em pastas de exibição.",
+    tabela([{k: "p", label: "Pasta"}, {k: "m", label: "Medida"}, {k: "d", label: "O que mede", w: 1}], med.map(m => ({p: m[0], m: m[1], d: m[2]})), 50))));
+
+  const alertas = [];
+  alertas.push(h("div", {class: "alerta bad"}, h("b", null, "Colunas de preço da 1067 no modelo estão ×100. "),
+    "Em '1067 - Loja 20' as colunas Vlr. Varejo PDV, Vlr.Vare.Conc, CustoMedio etc. são Int64 e o arquivo usa ponto decimal: 17,99 vira 1799. Nenhuma medida de preço foi criada em cima delas. Este relatório lê o CSV direto (ponto decimal). Para usar preço no Power BI, a etapa 'Tipo Alterado' precisa converter com cultura en-US para decimal."));
+  alertas.push(h("div", {class: "alerta"}, h("b", null, pf.cupons.qtd_zero + " linhas de cupom têm quantidade 0"),
+    " (valor de " + brl.format(pf.cupons.qtd_zero_valor) + "). Entram no valor vendido, mas não têm preço unitário e ficam fora da comparação de preços."));
+  pg.append(alertas);
+};
+
+// ================= PERFIL =================
+MONTA.perfil = () => {
+  const pg = $("#p-perfil"), pf = D.perfil, c = pf.cupons, q = pf.pesquisa, pr = pf.precos;
+  pg.append(h("div", {class: "grid g-kpi"},
+    kpi("Linhas de cupom", n0.format(c.linhas), "1 linha = 1 produto em 1 cupom"),
+    kpi("Linhas da pesquisa", n0.format(q.linhas), n0.format(q.produtos) + " produtos · " + q.datas + " datas"),
+    kpi("Concorrentes", q.concorrentes, q.filiais_concorrentes + " filiais"),
+    kpi("Preço cupom ÷ PDV (mediana)", pct(pr.cupom_sobre_pdv_mediana), n0.format(pr.linhas_comparaveis) + " linhas comparáveis")));
+  const ok = (cond) => cond ? tag("ok", "ok") : tag("atenção", "warn");
+  const quali = [
+    ["Duplicados cupom × produto", n0.format(c.duplicados_cupom_produto), c.duplicados_cupom_produto === 0, "Cada cupom tem o produto uma vez."],
+    ["id_produto nulo", n0.format(c.nulos_id_produto), c.nulos_id_produto === 0, "Chave de ligação completa."],
+    ["Quantidade ≤ 0", n0.format(c.qtd_zero), c.qtd_zero === 0, "Sem preço unitário; fora da análise de preço."],
+    ["Linhas com preço fora de ±50% do PDV", n0.format(pr.linhas_fora_50pct), pr.linhas_fora_50pct === 0, "Provável unidade diferente (caixa × unidade). Filtro no simulador."],
+    ["Preço PDV varejo = atacado", n0.format(pr.produtos_pdv_igual_atacado) + " produtos", true, "Nesses a tabela de preço não influencia."],
+    ["Linhas vendidas no preço de atacado", n0.format(pr.linhas_tier_atacado), true, "Comparadas ao preço de atacado do concorrente (modo automático)."],
+    ["Valores de PESQUISA", q.valores_pesquisa.join(", "), q.valores_pesquisa.length > 1, "Só existe 'COM PESQUISA': fora da pesquisa = sem linha na 1067."],
+    ["Lojas nos cupons", String(c.lojas), c.lojas > 1, "Análise de uma única loja."]];
+  pg.append(h("div", {class: "grid"}, card("Qualidade dos dados", "O que foi verificado antes de calcular preço e economia.",
+    tabela([{k: "a", label: "Verificação"}, {k: "b", label: "Resultado", r: 1}, {k: "s", label: "Status"}, {k: "d", label: "Comentário", w: 1}],
+      quali.map(r => ({a: r[0], b: r[1], s: r[2] ? tag("ok", "ok") : tag("atenção", "warn"), d: r[3]}))))));
+  pg.append(h("div", {class: "grid g-2"},
+    card("Concorrentes pesquisados", "Produtos distintos pesquisados em cada concorrente.", bars(pf.concorrentes.map(x => ({nm: x.nome, v: x.produtos, txt: n0.format(x.produtos)})))),
+    card("Tipo de preço do concorrente", "Linhas da pesquisa por tipo.", bars(pf.tipos.map(x => ({nm: x.nome, v: x.linhas, txt: n0.format(x.linhas)})), "b3")),
+    card("Linhas de pesquisa por dia", "Cobertura da pesquisa no tempo.", bars(pf.cobertura_pesquisa_dias.map(x => ({nm: x.data, v: x.linhas, txt: n0.format(x.linhas)})), "b2"))));
+};
+
+// ================= PESQUISA × VENDA =================
+MONTA.pesq = () => {
+  const pg = $("#p-pesq"), f = {setor: "", status: "", alto: false, q: ""};
+  const kp = h("div", {class: "grid g-kpi"}), tw = h("div", {class: "grid"}), sw = h("div", {class: "grid"});
+  const chk = h("input", {type: "checkbox", onchange: () => { f.alto = chk.checked; draw(); }});
+  pg.append(h("div", {class: "filters"},
+    sel("Setor", optSetor, v => { f.setor = v; draw(); }).el,
+    sel("Status", [["", "Todos"], ["d", "Dentro da pesquisa"], ["f", "Fora da pesquisa"]], v => { f.status = v; draw(); }).el,
+    h("div", {class: "fg"}, h("label", null, "Alto giro"), h("label", null, chk, " só alto giro")),
+    busca(v => { f.q = v; draw(); })), kp, sw, tw);
+  function draw() {
+    const base = P.filter(p => (!f.setor || p.setor === f.setor) && (!f.alto || p.alto));
+    const v = base.filter(p => (f.status === "" || (f.status === "f") === !!p.fora) && match(p, f.q));
+    const tv = base.reduce((s, p) => s + p.valor, 0), dv = base.filter(p => !p.fora).reduce((s, p) => s + p.valor, 0);
+    const nd = base.filter(p => !p.fora).length;
+    kp.replaceChildren(
+      kpi("Produtos", n0.format(base.length), f.alto ? "alto giro" : "todos os vendidos"),
+      kpi("Dentro da pesquisa", n0.format(nd), pct(base.length ? nd / base.length : null)),
+      kpi("Fora da pesquisa", n0.format(base.length - nd), pct(base.length ? (base.length - nd) / base.length : null)),
+      kpi("Valor dentro da pesquisa", pct(tv ? dv / tv : null), brl.format(dv) + " de " + brl.format(tv)),
+      kpi("Valor fora da pesquisa", brl.format(tv - dv), "sem preço de referência"));
+    const porSetor = {};
+    for (const p of base) { const s = porSetor[p.setor] || (porSetor[p.setor] = {setor: p.setor, n: 0, d: 0, v: 0, vd: 0}); s.n++; s.v += p.valor; if (!p.fora) { s.d++; s.vd += p.valor; } }
+    const linhas = Object.values(porSetor).map(s => ({...s, fora: s.n - s.d, pd: s.d / s.n, pvd: s.v ? s.vd / s.v : 0}));
+    sw.replaceChildren(card("Por setor", "Cobertura da pesquisa em quantidade de produtos e em valor vendido.",
+      tabela([{k: "setor", label: "Setor"}, {k: "n", label: "Produtos", r: 1, f: n0.format}, {k: "d", label: "Dentro", r: 1, f: n0.format}, {k: "fora", label: "Fora", r: 1, f: n0.format},
+        {k: "pd", label: "% produtos dentro", r: 1, f: x => pct(x)}, {k: "v", label: "Valor vendido", r: 1, f: x => brl.format(x)}, {k: "pvd", label: "% valor dentro", r: 1, f: x => pct(x)}], linhas, 60, ["v", -1])));
+    tw.replaceChildren(card("Produtos (" + n0.format(v.length) + ")", "Clique no cabeçalho para ordenar.",
+      tabela([{k: "id", label: "ID"}, {k: "nome", label: "Produto"}, {k: "setor", label: "Setor"}, {k: "cupons", label: "Cupons", r: 1}, {k: "dias", label: "Dias", r: 1},
+        {k: "unid", label: "Unidades", r: 1, f: n0.format}, {k: "valor", label: "Valor", r: 1, f: brl.format},
+        {k: "alto", label: "Giro", f: x => x ? tag("alto giro", "ok") : ""}, {k: "fora", label: "Pesquisa", f: x => x ? tag("fora", "bad") : tag("dentro", "ok")}], v, 200, ["cupons", -1])));
+  }
+  draw();
+};
+
+// ================= PREÇO × PESQUISA =================
+MONTA.preco = () => {
+  const pg = $("#p-preco"), f = {setor: "", mais: false, q: ""};
+  const base = [];
+  P.forEach((p, i) => {
+    if (p.pdvVar == null || !lq[i] || !PC[i].length) return;
+    let mv = null, ma = null, cv = -1;
+    for (const r of PC[i]) { if (mv == null || r.v < mv) { mv = r.v; cv = r.c; } if (ma == null || r.a < ma) ma = r.a; }
+    const pm = lv[i] / lq[i];
+    base.push({id: p.id, nome: p.nome, setor: p.setor, pm, pdvVar: p.pdvVar, pdvAtac: p.pdvAtac, vp: pm / p.pdvVar - 1,
+      mv, ma, conc: D.concs[cv], gap: p.pdvVar / mv - 1, valor: lv[i]});
+  });
+  const kp = h("div", {class: "grid g-kpi"}), gw = h("div", {class: "grid g-2"}), tw = h("div", {class: "grid"});
+  const chk = h("input", {type: "checkbox", onchange: () => { f.mais = chk.checked; draw(); }});
+  pg.append(h("div", {class: "filters"}, sel("Setor", optSetor, v => { f.setor = v; draw(); }).el,
+    h("div", {class: "fg"}, h("label", null, "Comparação"), h("label", null, chk, " só onde há concorrente mais barato")),
+    busca(v => { f.q = v; draw(); })), kp, gw, tw);
+  pg.append(h("p", {class: "note"}, "Preço médio de venda = valor ÷ quantidade (linhas com quantidade > 0), ponderado pelo volume. PDV = preço do Mateus na pesquisa (última data). Menor concorrente = menor preço de varejo entre os concorrentes na última pesquisa de cada um."));
+  function draw() {
+    const b = base.filter(r => !f.setor || r.setor === f.setor);
+    const v = b.filter(r => (!f.mais || r.gap > 0.0005) && match(r, f.q));
+    const caro = b.filter(r => r.gap > 0.02).length, igual = b.filter(r => Math.abs(r.gap) <= 0.02).length, barato = b.filter(r => r.gap < -0.02).length;
+    const med = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
+    kp.replaceChildren(
+      kpi("Produtos comparáveis", n0.format(b.length), "têm preço de venda e de concorrente"),
+      kpi("Mateus mais caro (> 2%)", pct(b.length ? caro / b.length : null), n0.format(caro) + " produtos"),
+      kpi("Equivalente (±2%)", pct(b.length ? igual / b.length : null), n0.format(igual) + " produtos"),
+      kpi("Mateus mais barato (> 2%)", pct(b.length ? barato / b.length : null), n0.format(barato) + " produtos"),
+      kpi("Venda ÷ PDV (mediana)", pct(med(b.map(r => 1 + r.vp)), 1), "abaixo de 100% = vendas em atacado"));
+    const faixas = [["Mateus mais caro > 10%", r => r.gap > .10], ["Mateus mais caro 2% a 10%", r => r.gap > .02 && r.gap <= .10], ["Equivalente ±2%", r => Math.abs(r.gap) <= .02],
+      ["Mateus mais barato 2% a 10%", r => r.gap < -.02 && r.gap >= -.10], ["Mateus mais barato > 10%", r => r.gap < -.10]];
+    gw.replaceChildren(card("Preço Mateus × menor concorrente", "Quantidade de produtos por faixa de diferença (PDV do Mateus ÷ menor concorrente − 1).",
+      bars(faixas.map(([nm, fn], i) => { const n = b.filter(fn).length; return {nm, v: n, txt: n0.format(n)}; }))));
+    tw.replaceChildren(card("Produtos (" + n0.format(v.length) + ")", "Ordene por 'Mateus × conc.' para ver os maiores desvios.",
+      tabela([{k: "id", label: "ID"}, {k: "nome", label: "Produto"}, {k: "pm", label: "Preço médio venda", r: 1, f: n2.format}, {k: "pdvVar", label: "PDV varejo", r: 1, f: n2.format},
+        {k: "pdvAtac", label: "PDV atacado", r: 1, f: n2.format}, {k: "vp", label: "Venda ÷ PDV", r: 1, f: x => pct(x, 1)}, {k: "mv", label: "Menor conc. varejo", r: 1, f: n2.format},
+        {k: "conc", label: "Concorrente"}, {k: "gap", label: "Mateus × conc.", r: 1, f: x => h("span", {class: x > .02 ? "bad" : x < -.02 ? "good" : ""}, pct(x, 1))}], v, 200, ["gap", -1])));
+  }
+  draw();
+};
+
+// ================= SIMULADOR =================
+MONTA.sim = () => {
+  const pg = $("#p-sim");
+  const f = {conc: new Set(D.concs.map((_, i) => i)), tipo: new Set(D.tipos.map((_, i) => i)), modo: "auto", desvio: 50, soAlto: false, setor: "", dif: 0, q: ""};
+  const kp = h("div", {class: "grid g-kpi"}), gw = h("div", {class: "grid g-2"}), tw = h("div", {class: "grid"}), aviso = h("div");
+  const chk = h("input", {type: "checkbox", onchange: () => { f.soAlto = chk.checked; draw(); }});
+  const dv = h("input", {type: "range", min: "0", max: "200", step: "5", value: "50", oninput: () => { f.desvio = +dv.value; dl.textContent = f.desvio ? "±" + f.desvio + "%" : "sem filtro"; draw(); }});
+  const dl = h("span", {class: "note"}, "±50%");
+  const df = h("input", {type: "number", min: "0", step: "0.05", value: "0", oninput: () => { f.dif = Math.max(0, +df.value || 0); draw(); }});
+  pg.append(h("div", {class: "filters"},
+    chips("Concorrentes considerados", D.concs, f.conc, draw),
+    chips("Tipo de preço do concorrente", D.tipos, f.tipo, draw)));
+  pg.append(h("div", {class: "filters"},
+    sel("Tabela de preço do concorrente", [["auto", "Automática (conforme a venda)"], ["var", "Sempre varejo"], ["atac", "Sempre atacado"]], v => { f.modo = v; draw(); }).el,
+    sel("Setor", optSetor, v => { f.setor = v; draw(); }).el,
+    h("div", {class: "fg"}, h("label", null, "Ignorar linhas com preço fora de"), dv, dl),
+    h("div", {class: "fg"}, h("label", null, "Diferença mínima (R$/un.)"), df),
+    h("div", {class: "fg"}, h("label", null, "Giro"), h("label", null, chk, " só alto giro")),
+    busca(v => { f.q = v; draw(); })), aviso, kp, gw, tw);
+  pg.append(h("p", {class: "note"}, "Como o cálculo funciona: para cada linha de cupom (quantidade > 0) compara-se o preço unitário vendido (valor ÷ quantidade) com o menor preço entre os concorrentes selecionados. Economia = (preço vendido − preço do concorrente) × quantidade, só onde o concorrente é mais barato. Vantagem Mateus = o inverso. Produtos fora da pesquisa não têm preço de referência e ficam de fora."));
+
+  function draw() {
+    // melhor preço por produto entre concorrentes selecionados
+    const bestV = new Float64Array(P.length).fill(NaN), bestA = new Float64Array(P.length).fill(NaN);
+    const cV = new Int16Array(P.length).fill(-1), cA = new Int16Array(P.length).fill(-1);
+    for (let i = 0; i < P.length; i++) for (const r of PC[i]) {
+      if (!f.conc.has(r.c) || !f.tipo.has(r.t)) continue;
+      if (!(r.v >= bestV[i])) { bestV[i] = r.v; cV[i] = r.c; }
+      if (!(r.a >= bestA[i])) { bestA[i] = r.a; cA[i] = r.c; }
+    }
+    const eco = new Float64Array(P.length), van = new Float64Array(P.length), vend = new Float64Array(P.length), unid = new Float64Array(P.length);
+    const ecoC = new Float64Array(P.length * NC), ecoConc = new Float64Array(NC), ecoSet = {};
+    let tVend = 0, tEco = 0, tVan = 0, exDes = 0, exDesV = 0, semRef = 0, semRefV = 0, nLin = 0, nCaro = 0, nBarato = 0;
+    for (const l of D.linhas) {
+      const i = l[0], p = P[i];
+      if ((f.setor && p.setor !== f.setor) || (f.soAlto && !p.alto)) continue;
+      const preco = l[2] / l[1];
+      if (f.desvio && Math.abs(preco / p.pdvVar - 1) > f.desvio / 100) { exDes++; exDesV += l[2]; continue; }
+      const atac = f.modo === "auto" ? l[3] === 1 : f.modo === "atac";
+      const pc = atac ? bestA[i] : bestV[i], cc = atac ? cA[i] : cV[i];
+      if (!(pc > 0)) { semRef++; semRefV += l[2]; continue; }
+      nLin++; vend[i] += l[2]; unid[i] += l[1]; tVend += l[2];
+      const d = preco - pc;
+      if (d > f.dif && d > 0) { const e = d * l[1]; eco[i] += e; tEco += e; ecoC[i * NC + cc] += e; ecoConc[cc] += e; nCaro++; }
+      else if (-d > f.dif && d < 0) { const e = -d * l[1]; van[i] += e; tVan += e; nBarato++; }
+    }
+    const foraV = P.reduce((s, p) => s + (p.fora && (!f.setor || p.setor === f.setor) && (!f.soAlto || p.alto) ? p.valor : 0), 0);
+    aviso.replaceChildren(...(f.conc.size === 0 ? [h("div", {class: "alerta bad"}, "Selecione ao menos um concorrente.")] : []));
+    kp.replaceChildren(
+      kpi("Venda comparada", brl.format(tVend), n0.format(nLin) + " linhas de cupom"),
+      kpi("Economia potencial", brl.format(tEco), pct(tVend ? tEco / tVend : null) + " da venda comparada"),
+      kpi("Vantagem do Mateus", brl.format(tVan), "onde o concorrente é mais caro"),
+      kpi("Saldo líquido", brl.format(tEco - tVan), "economia − vantagem"),
+      kpi("Fora do cálculo", brl.format(foraV + semRefV + exDesV), n0.format(exDes) + " linhas fora da faixa · " + n0.format(semRef) + " sem preço de concorrente · " + brl.format(foraV) + " fora da pesquisa"));
+    const porConc = D.concs.map((nm, c) => ({nm, v: ecoConc[c], txt: brl.format(ecoConc[c])})).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+    const ps = {};
+    P.forEach((p, i) => { if (eco[i] > 0) ps[p.setor] = (ps[p.setor] || 0) + eco[i]; });
+    const porSet = Object.entries(ps).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([nm, v]) => ({nm, v, txt: brl.format(v)}));
+    gw.replaceChildren(
+      card("Economia por concorrente", "Quanto da economia vem de cada concorrente (o mais barato de cada linha).", porConc.length ? bars(porConc) : h("div", {class: "empty"}, "Sem economia com os filtros atuais.")),
+      card("Economia por setor", "Os 10 setores com maior economia potencial.", porSet.length ? bars(porSet, "b3") : h("div", {class: "empty"}, "Sem economia com os filtros atuais.")));
+    const rows = [];
+    P.forEach((p, i) => {
+      if (!vend[i] || !match(p, f.q)) return;
+      let bc = -1, bv = 0;
+      for (let c = 0; c < NC; c++) if (ecoC[i * NC + c] > bv) { bv = ecoC[i * NC + c]; bc = c; }
+      rows.push({id: p.id, nome: p.nome, setor: p.setor, unid: unid[i], vend: vend[i], pm: vend[i] / unid[i], conc: bc >= 0 ? D.concs[bc] : "",
+        pconc: bc >= 0 ? (isNaN(bestV[i]) ? null : bestV[i]) : null, eco: eco[i], van: van[i], pe: vend[i] ? eco[i] / vend[i] : 0, alto: p.alto});
+    });
+    tw.replaceChildren(card("Produtos (" + n0.format(rows.length) + ")", "Ordenado pela maior economia potencial. Clique nos cabeçalhos para reordenar.",
+      tabela([{k: "id", label: "ID"}, {k: "nome", label: "Produto"}, {k: "setor", label: "Setor"}, {k: "unid", label: "Unidades", r: 1, f: n0.format}, {k: "vend", label: "Venda", r: 1, f: brl.format},
+        {k: "pm", label: "Preço médio", r: 1, f: n2.format}, {k: "conc", label: "Concorrente mais barato"}, {k: "pconc", label: "Preço conc. (varejo)", r: 1, f: x => x == null ? "" : n2.format(x)},
+        {k: "eco", label: "Economia", r: 1, f: x => h("span", {class: x > 0 ? "bad" : ""}, brl.format(x))}, {k: "pe", label: "% da venda", r: 1, f: x => pct(x)},
+        {k: "van", label: "Vantagem Mateus", r: 1, f: x => h("span", {class: x > 0 ? "good" : ""}, brl.format(x))},
+        {k: "alto", label: "Giro", f: x => x ? tag("alto giro", "ok") : ""}], rows, 200, ["eco", -1])));
+  }
+  draw();
+};
+
+// ================= CUPOM NO CONCORRENTE =================
+MONTA.cup = () => {
+  const pg = $("#p-cup");
+  const C = D.cupons.map(a => ({id: a[0], dia: a[1], pdv: a[2], itens: a[3], valor: a[4]}));
+  const LC = C.map(() => []);
+  D.linhas.forEach((l, k) => LC[l[4]].push(k));
+  const dias = [...new Set(C.map(c => c.dia))].sort();
+  const regIdx = D.tipos.indexOf("PRECO REGULAR");
+  const f = {conc: -1, reg: false, modo: "auto", desvio: 50, cob: 50, dia: "", q: ""};
+  let selId = null;
+  const kp = h("div", {class: "grid g-kpi"}), gw = h("div", {class: "grid g-2"}), tw = h("div", {class: "grid"}), dw = h("div", {class: "grid"});
+  const dv = h("input", {type: "range", min: "0", max: "200", step: "5", value: "50", oninput: () => { f.desvio = +dv.value; dl.textContent = f.desvio ? "±" + f.desvio + "%" : "sem filtro"; draw(); }});
+  const dl = h("span", {class: "note"}, "±50%");
+  const cb = h("input", {type: "range", min: "0", max: "100", step: "5", value: "50", oninput: () => { f.cob = +cb.value; cl.textContent = "≥ " + f.cob + "%"; draw(); }});
+  const cl = h("span", {class: "note"}, "≥ 50%");
+  const chk = h("input", {type: "checkbox", onchange: () => { f.reg = chk.checked; draw(); }});
+  pg.append(h("div", {class: "filters"},
+    sel("Comprar em", [["-1", "Melhor preço de cada item (todos)"], ...D.concs.map((n, i) => [String(i), "Somente " + n])], v => { f.conc = +v; draw(); }).el,
+    sel("Tabela de preço", [["auto", "Automática (conforme a venda)"], ["var", "Sempre varejo"], ["atac", "Sempre atacado"]], v => { f.modo = v; draw(); }).el,
+    sel("Dia", [["", "Todos os dias"], ...dias.map(d => [d, d])], v => { f.dia = v; draw(); }).el,
+    h("div", {class: "fg"}, h("label", null, "Preço do concorrente"), h("label", null, chk, " só preço regular")),
+    h("div", {class: "fg"}, h("label", null, "Ignorar itens com preço fora de"), dv, dl),
+    h("div", {class: "fg"}, h("label", null, "Cobertura mínima do cupom"), cb, cl),
+    (() => { const i = h("input", {type: "search", placeholder: "Nº do cupom…", oninput: () => { f.q = i.value.trim(); draw(); }}); return h("div", {class: "fg"}, h("label", null, "Cupom"), i); })()),
+    kp, gw, tw, dw);
+  pg.append(h("p", {class: "note"}, "Para cada cupom, os itens que existem na pesquisa são recalculados ao preço do concorrente (preço unitário × quantidade). Os itens fora da pesquisa ou fora da faixa de preço ficam ao preço do Mateus, então 'Total no concorrente' é uma estimativa do cupom inteiro. Diferença positiva = o concorrente seria mais barato; negativa = o cupom ficaria mais caro. Cobertura = % do valor do cupom que pôde ser comparado."));
+
+  function precos() {
+    const V = new Float64Array(P.length).fill(NaN), A = new Float64Array(P.length).fill(NaN);
+    for (let i = 0; i < P.length; i++) for (const r of PC[i]) {
+      if ((f.conc >= 0 && r.c !== f.conc) || (f.reg && r.t !== regIdx)) continue;
+      if (!(r.v >= V[i])) V[i] = r.v;
+      if (!(r.a >= A[i])) A[i] = r.a;
+    }
+    return {V, A};
+  }
+  function linha(l, R) {
+    const i = l[0], preco = l[2] / l[1];
+    if (f.desvio && Math.abs(preco / P[i].pdvVar - 1) > f.desvio / 100) return {motivo: "preço fora da faixa", preco};
+    const atac = f.modo === "auto" ? l[3] === 1 : f.modo === "atac";
+    const pc = atac ? R.A[i] : R.V[i];
+    if (!(pc > 0)) return {motivo: "sem preço neste concorrente", preco};
+    return {preco, pc, atac};
+  }
+  function draw() {
+    const R = precos(), n = C.length;
+    const comp = new Int32Array(n), pagoC = new Float64Array(n), concC = new Float64Array(n);
+    D.linhas.forEach(l => { const r = linha(l, R); if (r.pc) { const ci = l[4]; comp[ci]++; pagoC[ci] += l[2]; concC[ci] += r.pc * l[1]; } });
+    const rows = [];
+    C.forEach((c, ci) => {
+      if (!comp[ci] || (f.dia && c.dia !== f.dia) || (f.q && !String(c.id).includes(f.q))) return;
+      const cob = pagoC[ci] / c.valor;
+      if (cob < f.cob / 100 - 1e-9) return;
+      const dif = pagoC[ci] - concC[ci], est = c.valor - dif;
+      rows.push({ci, id: c.id, dia: c.dia, pdv: c.pdv, itens: c.itens, comp: comp[ci], cob, valor: c.valor, est, dif, pdif: dif / c.valor});
+    });
+    const tv = rows.reduce((s, r) => s + r.valor, 0), te = rows.reduce((s, r) => s + r.est, 0), td = tv - te;
+    const mais = rows.filter(r => r.dif > 0.005).length, menos = rows.filter(r => r.dif < -0.005).length;
+    kp.replaceChildren(
+      kpi("Cupons analisados", n0.format(rows.length), "de " + n0.format(C.length) + " (cobertura ≥ " + f.cob + "%)"),
+      kpi("Valor pago nos cupons", brl.format(tv), "ticket médio " + brl.format(rows.length ? tv / rows.length : 0)),
+      kpi("Total no concorrente (est.)", brl.format(te), f.conc >= 0 ? "somente " + D.concs[f.conc] : "melhor preço de cada item"),
+      kpi("Diferença", brl.format(td), td > 0 ? "concorrente mais barato em " + pct(tv ? td / tv : null) : "Mateus mais barato em " + pct(tv ? -td / tv : null)),
+      kpi("Cupons mais baratos no concorrente", pct(rows.length ? mais / rows.length : null), n0.format(mais) + " cupons · " + n0.format(menos) + " mais baratos no Mateus"));
+    const faixas = [["Concorrente mais barato > 5%", r => r.pdif > .05], ["Concorrente mais barato 0% a 5%", r => r.pdif > .0005 && r.pdif <= .05],
+      ["Equivalente (±0,05%)", r => Math.abs(r.pdif) <= .0005], ["Mateus mais barato 0% a 5%", r => r.pdif < -.0005 && r.pdif >= -.05], ["Mateus mais barato > 5%", r => r.pdif < -.05]];
+    const porDia = {};
+    for (const r of rows) { const d = porDia[r.dia] || (porDia[r.dia] = {v: 0, d: 0}); d.v += r.valor; d.d += r.dif; }
+    gw.replaceChildren(
+      card("Cupons por faixa de diferença", "Quantidade de cupons conforme a diferença sobre o valor do cupom.", bars(faixas.map(([nm, fn]) => { const k = rows.filter(fn).length; return {nm, v: k, txt: n0.format(k)}; }), "b2")),
+      card("Diferença por dia", "Soma da diferença dos cupons de cada dia (positivo = concorrente mais barato).",
+        bars(Object.keys(porDia).sort().map(d => ({nm: d, v: Math.abs(porDia[d].d), txt: brl.format(porDia[d].d)})), "b3")));
+    tw.replaceChildren(card("Cupons (" + n0.format(rows.length) + ")", "Clique em um cupom para ver item a item.",
+      tabela([{k: "id", label: "Cupom"}, {k: "dia", label: "Dia"}, {k: "pdv", label: "PDV"}, {k: "itens", label: "Itens", r: 1}, {k: "comp", label: "Comparados", r: 1}, {k: "cob", label: "Cobertura", r: 1, f: x => pct(x, 0)},
+        {k: "valor", label: "Valor do cupom", r: 1, f: x => brl.format(x)}, {k: "est", label: "Total no concorrente", r: 1, f: x => brl.format(x)},
+        {k: "dif", label: "Diferença", r: 1, f: x => h("span", {class: x > 0.005 ? "bad" : x < -0.005 ? "good" : ""}, brl.format(x))}, {k: "pdif", label: "%", r: 1, f: x => pct(x)}],
+        rows, 200, ["dif", -1], r => { selId = r.ci; detalhe(R); })));
+    if (selId != null) detalhe(R); else dw.replaceChildren();
+  }
+  function detalhe(R) {
+    const c = C[selId], ks = LC[selId];
+    const itens = ks.map(k => {
+      const l = D.linhas[k], p = P[l[0]], r = linha(l, R);
+      return {nome: p.nome, qtd: l[1], preco: r.preco, pc: r.pc == null ? null : r.pc, pago: l[2], conc: r.pc ? r.pc * l[1] : null, dif: r.pc ? l[2] - r.pc * l[1] : null, obs: r.motivo || (r.atac ? "atacado" : "varejo")};
+    });
+    const pesq = ks.reduce((s, k) => s + D.linhas[k][2], 0);
+    dw.replaceChildren(card("Cupom " + c.id + " · " + c.dia + " · PDV " + c.pdv,
+      c.itens + " itens · " + brl.format(c.valor) + " · " + brl.format(c.valor - pesq) + " em itens fora da pesquisa (mantidos ao preço do Mateus)",
+      tabela([{k: "nome", label: "Produto"}, {k: "qtd", label: "Qtd", r: 1, f: x => n0.format(x)}, {k: "preco", label: "Preço pago", r: 1, f: x => n2.format(x)},
+        {k: "pc", label: "Preço concorrente", r: 1, f: x => x == null ? "" : n2.format(x)}, {k: "pago", label: "Pago", r: 1, f: x => brl.format(x)}, {k: "conc", label: "No concorrente", r: 1, f: x => x == null ? "" : brl.format(x)},
+        {k: "dif", label: "Diferença", r: 1, f: x => x == null ? "" : h("span", {class: x > 0.005 ? "bad" : x < -0.005 ? "good" : ""}, brl.format(x))},
+        {k: "obs", label: "Observação", f: x => x === "atacado" || x === "varejo" ? tag(x, "mut") : tag(x, "warn")}], itens, 100, ["pago", -1])));
+  }
+  draw();
+};
+
+abrir(ABAS.some(a => a[0] === location.hash.slice(1)) ? location.hash.slice(1) : "visao");
+</script>
+</body>
+</html>
