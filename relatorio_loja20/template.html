@@ -184,7 +184,7 @@ function moda(vs) {
 // Preço de referência do mercado para o produto i: considera só preços compatíveis
 // (> 0 e dentro de ±compat% do preço do PDV Mateus). crit: "moda" ou "min".
 function refMercado(i, ok, crit, compat) {
-  const p = P[i], out = {V: NaN, cV: -1, A: NaN, cA: -1};
+  const p = P[i], out = {V: NaN, cV: -1, dV: "", A: NaN, cA: -1, dA: ""};
   for (const k of ["V", "A"]) {
     const pdv = k === "V" ? p.pdvVar : p.pdvAtac, cand = [];
     for (const r of PC[i]) {
@@ -192,14 +192,14 @@ function refMercado(i, ok, crit, compat) {
       const v = k === "V" ? r.v : r.a;
       if (!(v > 0)) continue;
       if (compat && pdv > 0 && Math.abs(v / pdv - 1) > compat / 100) continue;
-      cand.push({v, c: r.c});
+      cand.push({v, c: r.c, dt: r.dt});
     }
     if (!cand.length) continue;
     let ref;
     if (crit === "min") ref = Math.min(...cand.map(x => x.v)); else ref = moda(cand.map(x => x.v));
     let best = cand[0];
     for (const x of cand) if (Math.abs(x.v - ref) < Math.abs(best.v - ref)) best = x;
-    out[k] = ref; out["c" + k] = best.c;
+    out[k] = ref; out["c" + k] = best.c; out["d" + k] = best.dt;
   }
   return out;
 }
@@ -297,10 +297,10 @@ MONTA.sim = () => {
   const qtdf = q => q % 1 ? q.toLocaleString("pt-BR", {maximumFractionDigits: 3}) : n0.format(q);
   const pdvs = [...new Set(CP.pdv)].sort((a, b) => a - b);
   const f = {conc: new Set(D.concs.map((_, i) => i)), tipo: new Set(D.tipos.map((_, i) => i)), crit: "moda", modo: "auto",
-    compat: 50, desvio: 50, cob: 50, dia: "", pdv: "", q: "", grupo: "cup", ordem: "eco", ver: "todos"};
+    compat: 50, desvio: 50, cob: 0, dia: "", pdv: "", q: "", grupo: "cup", ordem: "eco", ver: "todos"};
   const aberto = new Set();
   let limite = 100, S = null;
-  let RV = null, RA = null, rPc = 0, rAt = false;
+  let RV = null, RA = null, RCV = null, RCA = null, RDV = null, RDA = null, rPc = 0, rAt = false, rCc = -1, rDt = "";
 
   const kp = $("#kp-sim"), tw = h("div", {class: "grid"}), aviso = h("div");
   const slider = (min, max, step, val, fmt, onch) => {
@@ -310,7 +310,7 @@ MONTA.sim = () => {
   };
   const [sCompat, lCompat] = slider(0, 100, 5, 50, v => v ? "±" + v + "%" : "sem filtro", v => { f.compat = v; draw(); });
   const [sDes, lDes] = slider(0, 200, 5, 50, v => v ? "±" + v + "%" : "sem filtro", v => { f.desvio = v; draw(); });
-  const [sCob, lCob] = slider(0, 100, 5, 50, v => "≥ " + v + "%", v => { f.cob = v; draw(); });
+  const [sCob, lCob] = slider(0, 100, 5, 0, v => "≥ " + v + "%", v => { f.cob = v; draw(); });
   const qin = h("input", {type: "search", placeholder: "Nº do cupom ou produto…", oninput: () => { f.q = qin.value.trim().toLowerCase(); limite = 100; draw(); }});
 
   pg.append(h("div", {class: "filters"},
@@ -334,7 +334,7 @@ MONTA.sim = () => {
         h("button", {class: "chip", type: "button", onclick: () => { expandir(true); }}, "Expandir tudo"),
         h("button", {class: "chip", type: "button", onclick: () => { aberto.clear(); render(); }}, "Recolher tudo")))));
   pg.append(aviso, tw);
-  pg.append(h("p", {class: "note"}, "Como ler: cada cupom mostra a nossa venda, quanto aquela mesma compra custaria no concorrente e a economia = venda no concorrente − nossa venda. Valor positivo (+, verde) = o Mateus foi mais barato; negativo (−, vermelho) = o Mateus foi mais caro que o concorrente. O preço do concorrente é a moda do mercado (preço mais comum entre os concorrentes selecionados; se nenhum se repete, a mediana) ou o menor preço, à sua escolha. Preços de concorrente ≤ 0 ou fora da faixa de compatibilidade com o preço do PDV Mateus são descartados. Itens fora da pesquisa, fora da faixa de preço ou sem preço de concorrente não entram na comparação e ficam ao preço do Mateus no total estimado do cupom. Cobertura = % do valor do cupom que pôde ser comparado. A linha TOTAL GERAL, fixa no rodapé da tabela, soma todos os cupons filtrados."));
+  pg.append(h("p", {class: "note"}, "Como ler: cada cupom mostra a nossa venda, quanto aquela mesma compra custaria no concorrente e a economia = venda no concorrente − nossa venda. Valor positivo (+, verde) = o Mateus foi mais barato; negativo (−, vermelho) = o Mateus foi mais caro que o concorrente. O preço do concorrente é a moda do mercado (preço mais comum entre os concorrentes selecionados; se nenhum se repete, a mediana) ou o menor preço, à sua escolha. Preços de concorrente ≤ 0 ou fora da faixa de compatibilidade com o preço do PDV Mateus são descartados. Produtos sem pesquisa, com pesquisa em branco (sem preço do concorrente) ou vendidos fora da faixa de preço não aparecem no cupom e não entram no cálculo: os valores do cupom são só dos itens comparados. Cada item mostra o concorrente cujo preço foi usado (o mais próximo da referência do mercado) e a data da pesquisa. Cobertura = % do valor do cupom que pôde ser comparado (use o filtro Cobertura mínima para esconder cupons pouco comparados). A linha TOTAL GERAL, fixa no rodapé da tabela, soma todos os cupons filtrados."));
 
   // 0 = comparado; 1 = fora da pesquisa; 2 = preço vendido fora da faixa; 3 = concorrente sem preço
   function avalia(k) {
@@ -345,15 +345,16 @@ MONTA.sim = () => {
     const at = f.modo === "auto" ? LN.t[k] === 1 : f.modo === "atac";
     const pc = at ? RA[pi] : RV[pi];
     if (!(pc > 0)) return 3;
-    rPc = pc; rAt = at; return 0;
+    rPc = pc; rAt = at; rCc = at ? RCA[pi] : RCV[pi]; rDt = at ? RDA[pi] : RDV[pi]; return 0;
   }
 
   function draw() {
     RV = new Float64Array(P.length).fill(NaN); RA = new Float64Array(P.length).fill(NaN);
+    RCV = new Int16Array(P.length).fill(-1); RCA = new Int16Array(P.length).fill(-1); RDV = new Array(P.length).fill(""); RDA = new Array(P.length).fill("");
     for (let i = 0; i < P.length; i++) {
       if (!PC[i].length) continue;
       const m = refMercado(i, r => f.conc.has(r.c) && f.tipo.has(r.t), f.crit, f.compat);
-      RV[i] = m.V; RA[i] = m.A;
+      RV[i] = m.V; RA[i] = m.A; RCV[i] = m.cV; RCA[i] = m.cA; RDV[i] = m.dV; RDA[i] = m.dA;
     }
     const cPago = new Float64Array(NCUP), cConc = new Float64Array(NCUP), cPos = new Float64Array(NCUP), cNeg = new Float64Array(NCUP), cNc = new Int32Array(NCUP);
     for (let ci = 0; ci < NCUP; ci++) {
@@ -381,20 +382,20 @@ MONTA.sim = () => {
       }
       idx.push(ci);
     }
-    const dif = ci => cConc[ci] - cPago[ci], val = ci => CP.v[ci] / 100;
+    const dif = ci => cConc[ci] - cPago[ci], val = ci => cPago[ci];
     const cmp = {eco: (a, b) => dif(b) - dif(a), pior: (a, b) => dif(a) - dif(b), valor: (a, b) => val(b) - val(a), cupom: (a, b) => a - b};
     idx.sort(cmp[f.ordem]);
     let tv = 0, td = 0, tp = 0, tn = 0, com = 0, sem = 0;
     for (const ci of idx) { tv += val(ci); td += dif(ci); tp += cPos[ci]; tn += cNeg[ci]; if (dif(ci) > 0.005) com++; else if (dif(ci) < -0.005) sem++; }
     S = {idx, cPago, cConc, cNc, dif, val};
     aviso.replaceChildren(...(f.conc.size === 0 ? [h("div", {class: "alerta bad"}, "Selecione ao menos um concorrente.")] : []));
-    let pagoT = 0, nitC = 0, nitT = 0;
-    for (const ci of idx) { pagoT += cPago[ci]; nitC += cNc[ci]; nitT += CP.it[ci]; }
-    S.tot = {tv, td, n: idx.length, pagoT, nitC, nitT};
+    let full = 0, nitC = 0;
+    for (const ci of idx) { full += CP.v[ci] / 100; nitC += cNc[ci]; }
+    S.tot = {tv, td, n: idx.length, full, nitC};
     kp.replaceChildren(
       kpi("Cupons analisados", n0.format(idx.length), "de " + n0.format(NCUP) + " (cobertura ≥ " + f.cob + "%)"),
-      kpi("Nossa venda", brl.format(tv), "ticket médio " + brl.format(idx.length ? tv / idx.length : 0)),
-      kpi("Venda no concorrente (est.)", brl.format(tv + td), (f.crit === "moda" ? "moda do mercado" : "menor preço") + " · itens sem preço ao valor do Mateus"),
+      kpi("Nossa venda (itens pesquisados)", brl.format(tv), "ticket médio " + brl.format(idx.length ? tv / idx.length : 0)),
+      kpi("Venda no concorrente (est.)", brl.format(tv + td), (f.crit === "moda" ? "moda do mercado" : "menor preço") + " · só itens com pesquisa"),
       kpi("Economia líquida", h("span", {class: cls(td)}, sinal(td)), td > 0 ? "Mateus mais barato em " + pct(tv ? td / tv : null) : "concorrente mais barato em " + pct(tv ? -td / tv : null)),
       kpi("Cupons com Mateus mais barato (+)", pct(idx.length ? com / idx.length : null), n0.format(com) + " cupons · " + n0.format(sem) + " com Mateus mais caro (−)"),
       kpi("Por item", h("span", null, h("span", {class: "good"}, sinal(tp)), " / ", h("span", {class: "bad"}, sinal(tn))), "soma dos itens positivos / negativos"));
@@ -417,11 +418,11 @@ MONTA.sim = () => {
   }
 
   const celula = (txt, r, extra) => h("td", {class: (r ? "r " : "") + (extra || "")}, txt);
-  function linha(nivel, chave, rotulo, qtd, pu, puc, nossa, conc, eco, pc, obs, cl) {
+  function linha(nivel, chave, rotulo, qtd, pu, puc, cnome, cdata, nossa, conc, eco, pc, obs, cl) {
     const tg = chave ? h("span", {class: "tg", role: "button", tabindex: "0", "aria-expanded": aberto.has(chave) ? "true" : "false"}, aberto.has(chave) ? "▼" : "▶") : h("span", {class: "tg"}, "");
     const tr = h("tr", {class: cl + (chave ? " clk" : "")},
       h("td", {style: "padding-left:" + (12 + nivel * 20) + "px"}, tg, rotulo),
-      celula(qtd, 1), celula(pu, 1), celula(puc, 1), celula(nossa, 1), celula(conc, 1),
+      celula(qtd, 1), celula(pu, 1), celula(puc, 1), celula(cnome, 0), celula(cdata, 0), celula(nossa, 1), celula(conc, 1),
       celula(eco == null ? "" : h("span", {class: cls(eco)}, sinal(eco)), 1), celula(pc == null ? "" : h("span", {class: cls(eco)}, pct(pc)), 1), celula(obs, 0));
     if (chave) {
       const alt = () => { if (aberto.has(chave)) aberto.delete(chave); else aberto.add(chave); render(); };
@@ -432,30 +433,27 @@ MONTA.sim = () => {
   }
 
   function linhasCupom(ci, nivel, tb) {
-    const total = CP.it[ci], valor = S.val(ci), dif = S.dif(ci), cob = S.cPago[ci] / valor;
-    tb.append(linha(nivel, "c:" + ci, "Cupom " + CP.id[ci] + " · " + D.dias[CP.d[ci]] + " · PDV " + CP.pdv[ci], S.cNc[ci] + "/" + total + " itens", null, null,
+    const valor = S.val(ci), dif = S.dif(ci), cob = S.cPago[ci] / (CP.v[ci] / 100);
+    tb.append(linha(nivel, "c:" + ci, "Cupom " + CP.id[ci] + " · " + D.dias[CP.d[ci]] + " · PDV " + CP.pdv[ci], S.cNc[ci] + (S.cNc[ci] === 1 ? " item" : " itens"), null, null, "", "",
       brl.format(valor), brl.format(valor + dif), dif, valor ? dif / valor : null, tag("cobertura " + pct(cob, 0), cob >= 0.8 ? "ok" : "mut"), "g" + (nivel ? 1 : 0)));
     if (!aberto.has("c:" + ci)) return;
     const it = [];
     for (let k = LI[ci], e = LI[ci + 1]; k < e; k++) {
-      const st = avalia(k), p = P[LN.p[k]], q = LN.q[k], v = LN.v[k] / 100;
-      const o = {nome: p.id + " · " + p.nome, q, pu: v / q, v, st};
-      if (st === 0) { o.pc = rPc; o.conc = rPc * q; o.eco = o.conc - v; o.at = rAt; }
-      it.push(o);
+      if (avalia(k) !== 0) continue;                      // sem pesquisa / pesquisa em branco: o produto não entra no cupom
+      const p = P[LN.p[k]], q = LN.q[k], v = LN.v[k] / 100, conc = rPc * q;
+      it.push({nome: p.id + " · " + p.nome, q, pu: v / q, v, pc: rPc, conc, eco: conc - v, at: rAt, cn: rCc >= 0 ? D.concs[rCc] : "", dt: rDt});
     }
-    it.sort((a, b) => (a.st === 0 ? 0 : 1) - (b.st === 0 ? 0 : 1) || (a.st === 0 ? b.eco - a.eco : b.v - a.v));
-    const obsTxt = {1: ["fora da pesquisa", "mut"], 2: ["preço fora da faixa", "warn"], 3: ["sem preço do concorrente", "warn"]};
+    it.sort((a, b) => b.eco - a.eco);
     for (const o of it) {
-      tb.append(linha(nivel + 1, null, o.nome, qtdf(o.q), n2.format(o.pu), o.st === 0 ? n2.format(o.pc) : "", brl.format(o.v),
-        o.st === 0 ? brl.format(o.conc) : "", o.st === 0 ? o.eco : null, o.st === 0 && o.v ? o.eco / o.v : null,
-        o.st === 0 ? tag(o.at ? "atacado" : "varejo", "mut") : tag(obsTxt[o.st][0], obsTxt[o.st][1]), "it"));
+      tb.append(linha(nivel + 1, null, o.nome, qtdf(o.q), n2.format(o.pu), n2.format(o.pc), o.cn, o.dt, brl.format(o.v), brl.format(o.conc), o.eco,
+        o.v ? o.eco / o.v : null, tag(o.at ? "atacado" : "varejo", "mut"), "it"));
     }
   }
 
   function render() {
     const tb = h("tbody"), idx = S.idx;
-    const cab = ["Cupom / Produto", "Qtd", "Preço unit. Mateus", "Preço unit. concorrente", "Nossa venda", "Venda no concorrente", "Economia (+/−)", "%", "Observação"];
-    const th = h("tr", null, cab.map((c, i) => h("th", {class: i > 0 && i < 8 ? "r" : ""}, c)));
+    const cab = ["Cupom / Produto", "Qtd", "Preço unit. Mateus", "Preço unit. concorrente", "Concorrente", "Data da pesquisa", "Nossa venda", "Venda no concorrente", "Economia (+/−)", "%", "Tabela de preço"];
+    const th = h("tr", null, cab.map((c, i) => h("th", {class: [1, 2, 3, 6, 7, 8, 9].includes(i) ? "r" : ""}, c)));
     let mostrados = 0;
     if (!idx.length) tb.append(h("tr", null, h("td", {colspan: cab.length, class: "empty"}, "Nenhum cupom com os filtros atuais.")));
     else if (f.grupo === "cup") {
@@ -464,15 +462,15 @@ MONTA.sim = () => {
       const gs = grupos(idx);
       for (const g of gs.slice(0, limite)) {
         mostrados++;
-        tb.append(linha(0, "d:" + g.d, "Dia " + D.dias[g.d], n0.format(g.cs.length) + " cupons", null, null, brl.format(g.v), brl.format(g.v + g.df), g.df, g.v ? g.df / g.v : null, "", "g0"));
+        tb.append(linha(0, "d:" + g.d, "Dia " + D.dias[g.d], n0.format(g.cs.length) + " cupons", null, null, "", "", brl.format(g.v), brl.format(g.v + g.df), g.df, g.v ? g.df / g.v : null, "", "g0"));
         if (aberto.has("d:" + g.d)) for (const ci of g.cs.slice(0, limite)) linhasCupom(ci, 1, tb);
       }
     }
     const total = f.grupo === "cup" ? idx.length : grupos(idx).length;
     const mais = total > limite ? h("div", {class: "note"}, "Mostrando " + n0.format(mostrados) + " de " + n0.format(total) + (f.grupo === "cup" ? " cupons" : " dias") + ". ",
       h("button", {class: "chip", type: "button", onclick: () => { limite += 100; render(); }}, "Mostrar mais 100")) : null;
-    const T = S.tot, tf = h("tfoot", null, linha(0, null, "TOTAL GERAL · " + n0.format(T.n) + " cupons", n0.format(T.nitC) + "/" + n0.format(T.nitT) + " itens", null, null,
-      brl.format(T.tv), brl.format(T.tv + T.td), T.td, T.tv ? T.td / T.tv : null, tag("cobertura " + pct(T.tv ? T.pagoT / T.tv : null, 0), "mut"), "tot"));
+    const T = S.tot, tf = h("tfoot", null, linha(0, null, "TOTAL GERAL · " + n0.format(T.n) + " cupons", n0.format(T.nitC) + " itens", null, null, "", "",
+      brl.format(T.tv), brl.format(T.tv + T.td), T.td, T.tv ? T.td / T.tv : null, tag("cobertura " + pct(T.full ? T.tv / T.full : null, 0), "mut"), "tot"));
     tw.replaceChildren(card("Cupom → Produtos", "Clique numa linha para abrir o cupom e ver item a item. Ordenado conforme o filtro “Ordenar por”.",
       [h("div", {class: "tw big"}, h("table", {class: "t"}, h("thead", null, th), tb, tf)), mais]));
   }

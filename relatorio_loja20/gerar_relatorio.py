@@ -166,7 +166,7 @@ def main() -> None:
                  None if pd.isna(r.pdv_atac) else round(float(r.pdv_atac), 2),
                  None if pd.isna(r.custo) else round(float(r.custo), 2)] for r in g.itertuples()]
     pcl = [[idx[r.id], concs.index(r.conc), round(float(r.var), 2), round(float(r.atac), 2),
-            tipos.index(r.tipo), f"{r.dt:%d/%m}"] for r in pc.itertuples() if r.id in idx]
+            tipos.index(r.tipo), f"{r.dt:%d/%m/%Y}"] for r in pc.itertuples() if r.id in idx]
 
     dados = {"gerado": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"), "cfg": cfg, "perfil": perfil,
              "validacao": validacao, "concs": concs, "tipos": tipos, "produtos": produtos, "pc": pcl,
