@@ -83,6 +83,8 @@ ul.l li{margin:3px 0}
 .cardhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .card.cheia{position:fixed;inset:0;z-index:60;width:100vw;height:100vh;box-sizing:border-box;border-radius:0;padding:16px 22px;overflow:auto}
 .card.cheia .tw.big{max-height:calc(100vh - 120px)}
+.tw.big.cat{max-height:620px}
+.card.cheia-cat .tw.big{max-height:calc(100vh - 290px)}
 body.sem-rolagem{overflow:hidden}
 .cont{min-width:0;margin-top:14px}
 .hamb{display:inline-block;width:16px;height:2px;background:currentColor;box-shadow:0 5px 0 currentColor,0 -5px 0 currentColor;margin:5px 2px}
@@ -279,7 +281,7 @@ function abrir(id) {
 }
 for (const [id, nome] of ABAS) $("#tabs").append(h("button", {class: "tab", role: "tab", "data-id": id, onclick: () => abrir(id)}, nome));
 
-let hookCat = null, dadosCatFn = null, menuFn = null;   // a Tabela dinâmica alimenta a tabela por categoria do Resumo
+let hookCat = null, dadosCatFn = null, menuFn = null, ctxCatFn = null;   // a Tabela dinâmica alimenta a tabela por categoria do Resumo
 const MONTA = {};
 MONTA.resumo = () => { MONTA.cat(); MONTA.visao(); MONTA.perfil(); };
 
@@ -304,13 +306,11 @@ MONTA.visao = () => {
         {k: "ok", label: "Status", f: v => v ? tag("confere", "ok") : tag("diverge", "bad")}], D.validacao))));
 
   const alertas = [];
-  alertas.push(h("div", {class: "alerta bad"}, h("b", null, "Colunas de preço da 1067 no modelo estão ×100. "),
-    "Em '1067 - Loja 20' as colunas Vlr. Varejo PDV, Vlr.Vare.Conc, CustoMedio etc. são Int64 e o arquivo usa ponto decimal: 17,99 vira 1799. Nenhuma medida de preço foi criada em cima delas. Este relatório lê o CSV direto (ponto decimal). Para usar preço no Power BI, a etapa 'Tipo Alterado' precisa converter com cultura en-US para decimal."));
   if (pf.cupons.qtd_zero > 0) alertas.push(h("div", {class: "alerta"}, h("b", null, pf.cupons.qtd_zero + " linhas de cupom têm quantidade 0"),
     " (valor de " + brl.format(pf.cupons.qtd_zero_valor) + "). Entram no valor vendido, mas não têm preço unitário e ficam fora da comparação de preços."));
-  alertas.push(h("div", {class: "alerta"}, h("b", null, "Períodos diferentes. "),
+  alertas.push(h("div", {class: "alerta"}, h("b", null, "Períodos da venda e da pesquisa. "),
     "As vendas (cupons) vão de " + pf.cupons.de + " a " + pf.cupons.ate + " e a pesquisa de preços de " + pf.pesquisa.de + " a " + pf.pesquisa.ate +
-    ". O preço do concorrente é o da pesquisa mais recente, aplicado às vendas do período anterior: a economia é uma simulação com preços atuais, não o preço do dia da venda."));
+    ". O preço do concorrente é o da pesquisa mais recente de cada produto, aplicado a todas as vendas do período: a economia é uma simulação, não o preço do dia exato da venda."));
   alertas.push(h("div", {class: "alerta"}, h("b", null, "Produtos sem preço de referência. "),
     n0.format(P.filter(p => p.fora).length) + " produtos vendidos não têm linha na pesquisa (" + pct(1 - vdentro / tot) + " do valor): ficam fora do cálculo de economia."));
   pg.append(alertas);
@@ -357,6 +357,7 @@ MONTA.sim = () => {
   const aberto = new Set();
   let limite = 100, S = null;
   dadosCatFn = () => dadosCat();
+  ctxCatFn = () => ({q: f.q, ordem: f.ordem === "cupom" ? "nome" : f.ordem});
   let RV = null, RA = null, RCV = null, RCA = null, RDV = null, RDA = null, rPc = 0, rAt = false, rCc = -1, rDt = "";
 
   const kp = $("#kp-sim"), tw = h("div", {class: "grid"}), aviso = h("div");
@@ -657,15 +658,13 @@ MONTA.sim = () => {
 // ================= RESUMO: CATEGORIA → PRODUTOS (tabela dinâmica de preços) =================
 MONTA.cat = () => {
   if (!feito.sim) { feito.sim = true; MONTA.sim(); }
-  const pg = $("#p-cat"), aberto = new Set(), fc = {ordem: "eco", q: ""};
+  const pg = $("#p-cat"), aberto = new Set(), fc = {ordem: "eco", q: ""};   // ordem e busca vêm do menu de filtros
   let limite = 100, dados = [];
   const sinal = v => (v > 0.005 ? "+" : v < -0.005 ? "−" : "") + brl.format(Math.abs(v));
   const cls = v => v > 0.005 ? "good" : v < -0.005 ? "bad" : "";
   const qtdf = q => q % 1 ? q.toLocaleString("pt-BR", {maximumFractionDigits: 3}) : n0.format(q);
-  const wrap = h("div", {class: "tw big"}), maisC = h("div"), info = h("span", {class: "note"});
-  const qin = h("input", {type: "search", placeholder: "Buscar categoria ou produto…", oninput: () => { fc.q = qin.value.trim().toLowerCase(); limite = 100; render(); }});
+  const wrap = h("div", {class: "tw big cat"}), maisC = h("div"), info = h("span", {class: "note"});
   const seta = (txt, dica, onclick) => h("button", {class: "chip ib", type: "button", title: dica, "aria-label": dica, onclick}, txt);
-  const ordSel = sel("Ordenar por", [["eco", "Maior economia (+)"], ["pior", "Pior resultado (−)"], ["valor", "Maior venda"], ["nome", "A → Z"]], v => { fc.ordem = v; render(); });
   const cel = (t, r) => h("td", {class: r ? "r" : ""}, t);
 
   function tr(nivel, chave, rot, cupons, qtd, pu, puc, cn, dt, pago, conc, cl) {
@@ -713,9 +712,20 @@ MONTA.cat = () => {
     h("button", {class: "chip hb", type: "button", "aria-label": "Abrir menu de filtros", onclick: () => menuFn && menuFn(true)}, h("span", {class: "hamb"}), "Filtros"),
     seta("▼", "Expandir tudo", () => { for (const g of (wrap._cats || []).slice(0, limite)) aberto.add("k:" + g.c); render(); }),
     seta("▲", "Recolher tudo", () => { aberto.clear(); render(); }), info);
-  pg.append(h("div", {class: "grid"}, card("Categoria → Produtos", "Preços, concorrente e data da pesquisa por categoria. Acompanha os filtros da Tabela dinâmica (concorrentes, preço do mercado, dia, PDV, faixas e categorias). Economia (R$) = venda no concorrente − nossa venda: positivo (+) = Mateus mais barato; negativo (−) = Mateus mais caro.",
-    [h("div", {class: "filters"}, ordSel.el, h("div", {class: "fg"}, h("label", null, "Busca"), qin)), barra, wrap, maisC])));
-  hookCat = () => { dados = dadosCatFn(); render(); };
+  const btnCheiaC = h("button", {class: "chip", type: "button", "aria-pressed": "false"}, "⛶ Tela cheia");
+  const hambC = () => h("button", {class: "chip hb", type: "button", "aria-label": "Abrir menu de filtros", onclick: () => menuFn && menuFn(true)}, h("span", {class: "hamb"}), "Filtros");
+  const cardC = h("div", {class: "card"},
+    h("div", {class: "cardhead"}, h("div", null, h("h2", null, "Categoria → Produtos"), h("p", {class: "sub"}, "Preços, concorrente e data da pesquisa por categoria. Acompanha todos os filtros do menu (concorrentes, preço do mercado, busca, dia, PDV, faixas, categorias e ordenação). Economia (R$) = venda no concorrente − nossa venda: positivo (+) = Mateus mais barato; negativo (−) = Mateus mais caro.")),
+      h("div", {class: "cardbtns"}, hambC(), btnCheiaC)),
+    h("div", {class: "body"}, wrap, maisC));
+  function cheiaC(on) {
+    cardC.classList.toggle("cheia", on); cardC.classList.toggle("cheia-cat", on); document.body.classList.toggle("sem-rolagem", on);
+    btnCheiaC.textContent = on ? "✕ Sair da tela cheia" : "⛶ Tela cheia"; btnCheiaC.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+  btnCheiaC.addEventListener("click", () => cheiaC(!cardC.classList.contains("cheia")));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && cardC.classList.contains("cheia")) cheiaC(false); });
+  pg.append(h("div", {class: "grid"}, barra, cardC));
+  hookCat = () => { const c = ctxCatFn(); fc.q = (c.q || "").toLowerCase(); fc.ordem = c.ordem; dados = dadosCatFn(); render(); };
   hookCat();
 };
 
