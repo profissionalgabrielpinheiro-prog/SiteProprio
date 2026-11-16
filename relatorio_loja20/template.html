@@ -9,14 +9,16 @@
 <title>Loja 20 · Venda × Pesquisa × Economia</title>
 <style>
 :root{color-scheme:light;--bg:#f4f4f1;--surface:#fcfcfb;--surface-2:#f4f4f1;--ink:#0b0b0b;--ink-2:#52514e;--muted:#76746e;--grid:#e1e0d9;--border:rgba(11,11,11,.10);--hover:rgba(11,11,11,.04);--accent:#2a78d6;--on-accent:#fff;--good:#006300;--bad:#c42f2f;--warn:#8a5a00;--good-bg:rgba(12,163,12,.12);--bad-bg:rgba(208,59,59,.12);--warn-bg:rgba(250,178,25,.22);--info-bg:rgba(42,120,214,.10);--bar:#2a78d6;--bar2:#1baf7a;--bar3:#eb6834;--shadow:0 1px 2px rgba(11,11,11,.05),0 4px 14px rgba(11,11,11,.04)}
-@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0d0d0d;--surface:#1a1a19;--surface-2:#232321;--ink:#f0efec;--ink-2:#c3c2b7;--muted:#9a988f;--grid:#2c2c2a;--border:rgba(255,255,255,.10);--hover:rgba(255,255,255,.05);--accent:#3987e5;--good:#2bc02b;--bad:#e66767;--warn:#f0b43a;--good-bg:rgba(12,163,12,.18);--bad-bg:rgba(230,103,103,.18);--warn-bg:rgba(250,178,25,.16);--info-bg:rgba(57,135,229,.16);--bar:#3987e5;--bar2:#199e70;--bar3:#d95926;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3)}}
+@media (prefers-color-scheme:dark){:root:not([data-tema="claro"]){color-scheme:dark;--bg:#0d0d0d;--surface:#1a1a19;--surface-2:#232321;--ink:#f0efec;--ink-2:#c3c2b7;--muted:#9a988f;--grid:#2c2c2a;--border:rgba(255,255,255,.10);--hover:rgba(255,255,255,.05);--accent:#3987e5;--good:#2bc02b;--bad:#e66767;--warn:#f0b43a;--good-bg:rgba(12,163,12,.18);--bad-bg:rgba(230,103,103,.18);--warn-bg:rgba(250,178,25,.16);--info-bg:rgba(57,135,229,.16);--bar:#3987e5;--bar2:#199e70;--bar3:#d95926;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3)}}
+:root[data-tema="escuro"]{color-scheme:dark;--bg:#0d0d0d;--surface:#1a1a19;--surface-2:#232321;--ink:#f0efec;--ink-2:#c3c2b7;--muted:#9a988f;--grid:#2c2c2a;--border:rgba(255,255,255,.10);--hover:rgba(255,255,255,.05);--accent:#3987e5;--good:#2bc02b;--bad:#e66767;--warn:#f0b43a;--good-bg:rgba(12,163,12,.18);--bad-bg:rgba(230,103,103,.18);--warn-bg:rgba(250,178,25,.16);--info-bg:rgba(57,135,229,.16);--bar:#3987e5;--bar2:#199e70;--bar3:#d95926;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3)}
+:root[data-tema="claro"]{color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 h1,h2,h3,p{margin:0}
 button,select,input{font:inherit;color:inherit}
 .wrap{max-width:1360px;margin:0 auto;padding:0 20px}
 .top{background:var(--surface);border-bottom:1px solid var(--border)}
-.top .wrap{padding-top:14px;padding-bottom:14px}
+.top .wrap{padding-top:14px;padding-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .top h1{font-size:18px;font-weight:650}
 .top p{color:var(--ink-2);font-size:12.5px}
 .tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
@@ -72,21 +74,57 @@ ul.l li{margin:3px 0}
 .empty{color:var(--muted);padding:18px;text-align:center}
 .t tr.g0 td{font-weight:650;background:var(--surface-2)}
 .t tr.g1 td{font-weight:600}
+.t tr.gc td{font-weight:600;background:var(--hover)}
 .t tr.it td{color:var(--ink-2)}
 .tg{display:inline-block;width:18px;color:var(--muted);user-select:none}
 .tw.big{max-height:72vh}
+.chip.ib{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:12px;border-radius:8px}
+.cardbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.cardhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.card.cheia{position:fixed;inset:0;z-index:60;width:100vw;height:100vh;box-sizing:border-box;border-radius:0;padding:16px 22px;overflow:auto}
+.card.cheia .tw.big{max-height:calc(100vh - 120px)}
+body.sem-rolagem{overflow:hidden}
+.cont{min-width:0;margin-top:14px}
+.hamb{display:inline-block;width:16px;height:2px;background:currentColor;box-shadow:0 5px 0 currentColor,0 -5px 0 currentColor;margin:5px 2px}
+.chip.hb{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.scrim{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.38);opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;z-index:80;height:100vh;width:min(390px,100vw);box-sizing:border-box;overflow:auto;background:var(--surface);
+  box-shadow:-10px 0 34px rgba(0,0,0,.2);padding:0 22px 28px;transform:translateX(104%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+.drawer.aberto{transform:none;visibility:visible;transition:transform .22s ease}
+.drawer .fechar{display:flex;justify-content:flex-end;padding:18px 0 10px}
+.drawer .fechar button{border:0;background:none;cursor:pointer;font-weight:600;font-size:13px;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.drawer .fechar button span{font-size:20px;line-height:1}
+.drawer details{border-top:1px solid var(--border);padding:2px 0 10px}
+.drawer summary{cursor:pointer;font-size:17px;font-weight:500;padding:14px 0 10px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.drawer summary::after{content:"▾";color:var(--muted);font-size:13px}
+.drawer details:not([open]) summary::after{content:"▸"}
+.drawer .fg{margin-top:0;padding:12px 0;border-top:1px solid var(--grid)}
+.drawer details>.note{padding:4px 0 6px}
+.drawer select,.drawer input[type=search]{width:100%;min-width:0;box-sizing:border-box}
+.drawer input[type=range]{width:100%}
+.drawer .fx{padding:10px 0 4px;border-top:1px solid var(--grid)}
+.drawer .fx label{padding:5px 0;border-bottom:1px solid var(--grid)}
+.drawer>.chip{margin-top:14px}
+.fx{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.fx label{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.fx label[hidden]{display:none}
+.fx .n{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.fx.rol{max-height:260px;overflow:auto;padding-right:4px}
+.barra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:10px}
 .t tfoot td{position:sticky;bottom:0;background:var(--surface-2);font-weight:700;border-top:2px solid var(--border);z-index:1}
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap">
-<h1>Loja 20 · Venda × Pesquisa × Economia</h1>
-<p id="sub"></p>
+<div><h1>Loja 20 · Venda × Pesquisa × Economia</h1>
+<p id="sub"></p></div>
+<button id="tema" class="chip ib" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">☾</button>
 </div></header>
 <nav class="tabs"><div class="wrap" role="tablist" id="tabs"></div></nav>
 <main><div class="wrap">
 <section class="page" id="p-sim"></section>
-<section class="page" id="p-resumo"><p class="note"><b>Resultado da simulação</b> · acompanha os filtros da janela Tabela dinâmica</p><div id="kp-sim" class="grid g-kpi"><div class="empty">Abra a Tabela dinâmica para calcular.</div></div><div id="p-visao"></div><div id="p-perfil"></div></section>
+<section class="page" id="p-resumo"><p class="note"><b>Resultado da simulação</b> · acompanha os filtros da janela Tabela dinâmica</p><div id="kp-sim" class="grid g-kpi"><div class="empty">Abra a Tabela dinâmica para calcular.</div></div><div id="p-cat"></div><div id="p-visao"></div><div id="p-perfil"></div></section>
 </div></main>
 <script type="application/json" id="dados">__DADOS__</script>
 <script>
@@ -97,6 +135,21 @@ const n0 = new Intl.NumberFormat("pt-BR", {maximumFractionDigits: 0});
 const n2 = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const pct = (v, d = 1) => v == null || !isFinite(v) ? "–" : (v * 100).toLocaleString("pt-BR", {minimumFractionDigits: d, maximumFractionDigits: d}) + "%";
 const $ = s => document.querySelector(s);
+
+// ---------- tema claro / escuro ----------
+const raiz = document.documentElement;
+try { const t0 = localStorage.getItem("tema"); if (t0 === "claro" || t0 === "escuro") raiz.dataset.tema = t0; } catch (_) {}
+const temaAtual = () => raiz.dataset.tema || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro");
+function aplicaTema(t, grava) {
+  raiz.dataset.tema = t;
+  if (grava) { try { localStorage.setItem("tema", t); } catch (_) {} }
+  const bt = $("#tema");
+  bt.textContent = t === "escuro" ? "☀" : "☾";
+  bt.title = t === "escuro" ? "Mudar para o modo claro" : "Mudar para o modo escuro";
+  bt.setAttribute("aria-label", bt.title);
+}
+$("#tema").addEventListener("click", () => aplicaTema(temaAtual() === "escuro" ? "claro" : "escuro", true));
+aplicaTema(temaAtual(), false);
 
 function h(tag, props, ...kids) {
   const e = document.createElement(tag);
@@ -169,6 +222,8 @@ const P = D.produtos.map(a => ({id: a[0], nome: a[1], setor: a[2], cat: a[3], cu
   fora: a[8], alto: a[9], pdvVar: a[10], pdvAtac: a[11], custo: a[12]}));
 const NC = D.concs.length;
 const PC = P.map(() => []);
+const CATS = [...new Set(P.map(p => p.cat))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+const PCAT = Int16Array.from(P, p => CATS.indexOf(p.cat));
 for (const r of D.pc) PC[r[0]].push({c: r[1], v: r[2], a: r[3], t: r[4], dt: r[5]});
 
 // Moda dos preços (arredondados em centavos); empate = menor preço; sem repetição = mediana.
@@ -224,8 +279,9 @@ function abrir(id) {
 }
 for (const [id, nome] of ABAS) $("#tabs").append(h("button", {class: "tab", role: "tab", "data-id": id, onclick: () => abrir(id)}, nome));
 
+let hookCat = null, dadosCatFn = null, menuFn = null;   // a Tabela dinâmica alimenta a tabela por categoria do Resumo
 const MONTA = {};
-MONTA.resumo = () => { MONTA.visao(); MONTA.perfil(); };
+MONTA.resumo = () => { MONTA.cat(); MONTA.visao(); MONTA.perfil(); };
 
 // ================= VISÃO GERAL =================
 MONTA.visao = () => {
@@ -297,9 +353,10 @@ MONTA.sim = () => {
   const qtdf = q => q % 1 ? q.toLocaleString("pt-BR", {maximumFractionDigits: 3}) : n0.format(q);
   const pdvs = [...new Set(CP.pdv)].sort((a, b) => a - b);
   const f = {conc: new Set(D.concs.map((_, i) => i)), tipo: new Set(D.tipos.map((_, i) => i)), crit: "moda", modo: "auto",
-    compat: 50, desvio: 50, cob: 0, dia: "", pdv: "", q: "", grupo: "cup", ordem: "eco", ver: "todos"};
+    compat: 50, desvio: 50, cob: 0, dia: "", pdv: "", q: "", grupo: "cc", ordem: "eco", ver: "todos", cats: new Set()};
   const aberto = new Set();
   let limite = 100, S = null;
+  dadosCatFn = () => dadosCat();
   let RV = null, RA = null, RCV = null, RCA = null, RDV = null, RDA = null, rPc = 0, rAt = false, rCc = -1, rDt = "";
 
   const kp = $("#kp-sim"), tw = h("div", {class: "grid"}), aviso = h("div");
@@ -313,32 +370,108 @@ MONTA.sim = () => {
   const [sCob, lCob] = slider(0, 100, 5, 0, v => "≥ " + v + "%", v => { f.cob = v; draw(); });
   const qin = h("input", {type: "search", placeholder: "Nº do cupom ou produto…", oninput: () => { f.q = qin.value.trim().toLowerCase(); limite = 100; draw(); }});
 
-  pg.append(h("div", {class: "filters"},
-    chips("Concorrentes considerados", D.concs, f.conc, draw),
-    chips("Tipo de preço do concorrente", D.tipos, f.tipo, draw)));
-  pg.append(h("div", {class: "filters"},
-    sel("Preço do mercado", CRITERIOS, v => { f.crit = v; draw(); }).el,
-    sel("Tabela de preço", [["auto", "Automática (conforme a venda)"], ["var", "Sempre varejo"], ["atac", "Sempre atacado"]], v => { f.modo = v; draw(); }).el,
-    sel("Agrupar", [["cup", "Cupom → Produtos"], ["dia", "Dia → Cupom → Produtos"]], v => { f.grupo = v; limite = 100; draw(); }).el,
-    sel("Ordenar por", [["eco", "Melhor resultado do Mateus (+)"], ["pior", "Pior resultado do Mateus (−)"], ["valor", "Maior valor do cupom"], ["cupom", "Cupom / dia"]], v => { f.ordem = v; draw(); }).el,
-    sel("Mostrar", [["todos", "Todos os cupons"], ["pos", "Só onde o Mateus foi mais barato (+)"], ["neg", "Só onde o Mateus foi mais caro (−)"]], v => { f.ver = v; limite = 100; draw(); }).el,
-    sel("Dia", [["", "Todos os dias"], ...D.dias.map((d, i) => [String(i), d])], v => { f.dia = v; limite = 100; draw(); }).el,
-    sel("PDV", [["", "Todos os PDVs"], ...pdvs.map(x => [String(x), String(x)])], v => { f.pdv = v; limite = 100; draw(); }).el));
-  pg.append(h("div", {class: "filters"},
-    h("div", {class: "fg"}, h("label", null, "Preço do concorrente compatível com o PDV em"), sCompat, lCompat),
-    h("div", {class: "fg"}, h("label", null, "Ignorar itens vendidos fora de"), sDes, lDes),
-    h("div", {class: "fg"}, h("label", null, "Cobertura mínima do cupom"), sCob, lCob),
-    h("div", {class: "fg"}, h("label", null, "Busca"), qin),
-    h("div", {class: "fg"}, h("span", {class: "l"}, "Linhas"),
-      h("div", {class: "chips"},
-        h("button", {class: "chip", type: "button", onclick: () => { expandir(true); }}, "Expandir tudo"),
-        h("button", {class: "chip", type: "button", onclick: () => { aberto.clear(); render(); }}, "Recolher tudo")))));
-  pg.append(aviso, tw);
-  pg.append(h("p", {class: "note"}, "Como ler: cada cupom mostra a nossa venda, quanto aquela mesma compra custaria no concorrente e a economia = venda no concorrente − nossa venda. Valor positivo (+, verde) = o Mateus foi mais barato; negativo (−, vermelho) = o Mateus foi mais caro que o concorrente. O preço do concorrente é a moda do mercado (preço mais comum entre os concorrentes selecionados; se nenhum se repete, a mediana) ou o menor preço, à sua escolha. Preços de concorrente ≤ 0 ou fora da faixa de compatibilidade com o preço do PDV Mateus são descartados. Produtos sem pesquisa, com pesquisa em branco (sem preço do concorrente) ou vendidos fora da faixa de preço não aparecem no cupom e não entram no cálculo: os valores do cupom são só dos itens comparados. Cada item mostra o concorrente cujo preço foi usado (o mais próximo da referência do mercado) e a data da pesquisa. Cobertura = % do valor do cupom que pôde ser comparado (use o filtro Cobertura mínima para esconder cupons pouco comparados). A linha TOTAL GERAL, fixa no rodapé da tabela, soma todos os cupons filtrados."));
+  // ---- faixas: itens por cupom (1 a 5 unitário) e valor do cupom (de R$ 500 em R$ 500)
+  const FAIXAS_ITENS = ["1 item", "2 itens", "3 itens", "4 itens", "5 itens", "6 a 10 itens", "11 a 20 itens", "21 ou mais itens"];
+  const faixaItens = n => n <= 5 ? n - 1 : n <= 10 ? 5 : n <= 20 ? 6 : 7;
+  const PASSO = 500, faixaValor = v => Math.floor((v + 1e-9) / PASSO);
+  const rotValor = b => "R$ " + n0.format(b * PASSO) + " a " + n0.format((b + 1) * PASSO);
+  f.itB = new Set(); f.vaB = new Set();
+  const boxItens = h("div", {class: "fx"}), boxValor = h("div", {class: "fx rol"});
+  function alterna(set, k) { if (set.has(k)) set.delete(k); else set.add(k); limite = 100; draw(); }
+  function caixa(rot, n, marcado, onch) {
+    const inp = h("input", {type: "checkbox", onchange: onch}); inp.checked = marcado;
+    return h("label", null, inp, h("span", null, rot), h("span", {class: "n"}, n0.format(n)));
+  }
+  function pintaFaixas(cI, cV) {
+    boxItens.replaceChildren(...FAIXAS_ITENS.map((rot, i) => caixa(rot, cI[i] || 0, f.itB.has(i), () => alterna(f.itB, i))));
+    const bs = [...new Set([...Object.keys(cV).map(Number), ...f.vaB])].sort((x, y) => x - y);
+    boxValor.replaceChildren(...bs.map(bk => caixa(rotValor(bk), cV[bk] || 0, f.vaB.has(bk), () => alterna(f.vaB, bk))));
+  }
+  // categoria (dim_produto): lista com busca; sem marcação = todas
+  const msgCat = "Sem marcação = todas as categorias.";
+  const infoCat = h("p", {class: "note"}, msgCat), boxCat = h("div", {class: "fx rol"});
+  const catLabels = CATS.map((nm, i) => {
+    const inp = h("input", {type: "checkbox", onchange: () => {
+      if (inp.checked) f.cats.add(i); else f.cats.delete(i);
+      infoCat.textContent = f.cats.size ? n0.format(f.cats.size) + " categoria(s) marcada(s)" : msgCat;
+      limite = 100; draw();
+    }});
+    const l = h("label", {"data-n": nm.toLowerCase()}, inp, h("span", null, nm)); l.cb = inp; return l;
+  });
+  boxCat.append(...catLabels);
+  const qcat = h("input", {type: "search", placeholder: "Buscar categoria…", oninput: () => {
+    const q = qcat.value.trim().toLowerCase();
+    for (const l of catLabels) l.hidden = !!q && !l.dataset.n.includes(q);
+  }});
+  const limpaCat = () => { f.cats.clear(); for (const l of catLabels) l.cb.checked = false; infoCat.textContent = msgCat; limite = 100; draw(); };
+  const limpar = () => { f.itB.clear(); f.vaB.clear(); limite = 100; draw(); };
+
+  // ---- menu lateral (recolhe ao clicar em "Filtros")
+  const grupo = (titulo, ...itens) => h("details", {open: ""}, h("summary", null, titulo), ...itens);
+  const campo = (rot, ...c) => h("div", {class: "fg"}, h("label", null, rot), ...c);
+  const aside = h("aside", {class: "drawer", role: "dialog", "aria-label": "Menu de filtros"},
+    h("div", {class: "fechar"}, h("button", {type: "button", onclick: () => menu(false)}, "Fechar Menu ", h("span", null, "›"))),
+    grupo("Concorrentes e preço",
+      chips("Concorrentes considerados", D.concs, f.conc, draw),
+      chips("Tipo de preço do concorrente", D.tipos, f.tipo, draw),
+      sel("Preço do mercado", CRITERIOS, v => { f.crit = v; draw(); }).el,
+      sel("Tabela de preço", [["auto", "Automática (conforme a venda)"], ["var", "Sempre varejo"], ["atac", "Sempre atacado"]], v => { f.modo = v; draw(); }).el,
+      campo("Preço do concorrente compatível com o PDV em", sCompat, lCompat),
+      campo("Ignorar itens vendidos fora de", sDes, lDes)),
+    grupo("Cupons",
+      campo("Busca", qin),
+      sel("Dia", [["", "Todos os dias"], ...D.dias.map((d, i) => [String(i), d])], v => { f.dia = v; limite = 100; draw(); }).el,
+      sel("PDV", [["", "Todos os PDVs"], ...pdvs.map(x => [String(x), String(x)])], v => { f.pdv = v; limite = 100; draw(); }).el,
+      sel("Mostrar", [["todos", "Todos os cupons"], ["pos", "Só onde o Mateus foi mais barato (+)"], ["neg", "Só onde o Mateus foi mais caro (−)"]], v => { f.ver = v; limite = 100; draw(); }).el,
+      campo("Cobertura mínima do cupom", sCob, lCob)),
+    grupo("Itens por cupom", h("p", {class: "note"}, "Itens comparados. Sem marcação = todos."), boxItens),
+    grupo("Valor do cupom (R$ 500 em R$ 500)", h("p", {class: "note"}, "Valor dos itens comparados. Sem marcação = todos."), boxValor),
+    grupo("Categoria", infoCat, campo("Buscar categoria", qcat), boxCat, h("button", {class: "chip", type: "button", onclick: limpaCat}, "Limpar categorias")),
+    grupo("Exibição",
+      sel("Agrupar", [["cc", "Cupom → Categoria → Produtos"], ["cup", "Cupom → Produtos"], ["dia", "Dia → Cupom → Categoria → Produtos"]], v => { f.grupo = v; limite = 100; draw(); }).el,
+      sel("Ordenar por", [["eco", "Melhor resultado do Mateus (+)"], ["pior", "Pior resultado do Mateus (−)"], ["valor", "Maior valor do cupom"], ["cupom", "Cupom / dia"]], v => { f.ordem = v; draw(); }).el),
+    h("button", {class: "chip", type: "button", onclick: limpar}, "Limpar faixas"));
+
+  const nota = (h("p", {class: "note"}, "Como ler: cada cupom mostra a nossa venda, quanto aquela mesma compra custaria no concorrente e a economia = venda no concorrente − nossa venda. Valor positivo (+, verde) = o Mateus foi mais barato; negativo (−, vermelho) = o Mateus foi mais caro que o concorrente. O preço do concorrente é a moda do mercado (preço mais comum entre os concorrentes selecionados; se nenhum se repete, a mediana) ou o menor preço, à sua escolha. Preços de concorrente ≤ 0 ou fora da faixa de compatibilidade com o preço do PDV Mateus são descartados. Produtos sem pesquisa, com pesquisa em branco (sem preço do concorrente) ou vendidos fora da faixa de preço não aparecem no cupom e não entram no cálculo: os valores do cupom são só dos itens comparados. Cada item mostra o concorrente cujo preço foi usado (o mais próximo da referência do mercado) e a data da pesquisa. Cobertura = % do valor do cupom que pôde ser comparado (use o filtro Cobertura mínima para esconder cupons pouco comparados). A linha TOTAL GERAL, fixa no rodapé da tabela, soma todos os cupons filtrados."));
+
+  // botões da barra: hambúrguer (abre o menu lateral) e setas pequenas
+  const seta = (txt, dica, onclick) => h("button", {class: "chip ib", type: "button", title: dica, "aria-label": dica, onclick}, txt);
+  const scrim = h("div", {class: "scrim", onclick: () => menu(false)});
+  const botoesMenu = [];
+  const hamb = () => { const bt = h("button", {class: "chip hb", type: "button", "aria-expanded": "false", "aria-label": "Abrir menu de filtros", onclick: () => menu(!aside.classList.contains("aberto"))}, h("span", {class: "hamb"}), "Filtros"); botoesMenu.push(bt); return bt; };
+  function menu(on) {
+    aside.classList.toggle("aberto", on); scrim.classList.toggle("on", on);
+    for (const bt of botoesMenu) bt.setAttribute("aria-expanded", on ? "true" : "false");
+    if (on) aside.querySelector(".fechar button").focus();
+  }
+  menuFn = menu;
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && aside.classList.contains("aberto")) { menu(false); e.stopImmediatePropagation(); } });
+  const resumoF = h("span", {class: "note"});
+  const barra = h("div", {class: "barra"}, hamb(),
+    seta("▼", "Expandir tudo", () => expandir(true)),
+    seta("▲", "Recolher tudo", () => { aberto.clear(); render(); }), resumoF);
+  pg.append(h("div", {class: "cont"}, barra, aviso, tw, nota));
+  document.body.append(scrim, aside);
+
+  // cartão da tabela: criado uma vez (a rolagem e a tela cheia sobrevivem ao redesenho das linhas)
+  const wrapT = h("div", {class: "tw big"}), maisT = h("div"), corpoT = h("div", {class: "body"}, wrapT, maisT);
+  const btnCheia = h("button", {class: "chip", type: "button", "aria-pressed": "false"}, "⛶ Tela cheia");
+  const cardT = h("div", {class: "card"},
+    h("div", {class: "cardhead"},
+      h("div", null, h("h2", null, "Cupom → Produtos"), h("p", {class: "sub"}, "Clique numa linha para abrir o cupom e ver item a item. Ordenado conforme o filtro “Ordenar por”.")),
+      h("div", {class: "cardbtns"}, hamb(), btnCheia)), corpoT);
+  tw.append(cardT);
+  function cheia(on) {
+    cardT.classList.toggle("cheia", on); document.body.classList.toggle("sem-rolagem", on);
+    btnCheia.textContent = on ? "✕ Sair da tela cheia" : "⛶ Tela cheia"; btnCheia.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+  btnCheia.addEventListener("click", () => cheia(!cardT.classList.contains("cheia")));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && cardT.classList.contains("cheia")) cheia(false); });
 
   // 0 = comparado; 1 = fora da pesquisa; 2 = preço vendido fora da faixa; 3 = concorrente sem preço
   function avalia(k) {
     const pi = LN.p[k], pv = PV[pi];
+    if (f.cats.size && !f.cats.has(PCAT[pi])) return 4;   // categoria não marcada no filtro
     if (!(pv > 0)) return 1;
     const v = LN.v[k] / 100, preco = v / LN.q[k];
     if (f.desvio && Math.abs(preco / pv - 1) > f.desvio / 100) return 2;
@@ -365,7 +498,7 @@ MONTA.sim = () => {
         if (d > 0) cPos[ci] += d; else cNeg[ci] += d;
       }
     }
-    const pm = f.q ? P.map(p => match(p, f.q)) : null, idx = [];
+    const pm = f.q ? P.map(p => match(p, f.q)) : null, base = [];
     for (let ci = 0; ci < NCUP; ci++) {
       if (!cNc[ci]) continue;
       if (f.dia !== "" && CP.d[ci] !== +f.dia) continue;
@@ -380,8 +513,14 @@ MONTA.sim = () => {
         for (let k = LI[ci], e = LI[ci + 1]; k < e; k++) if (pm[LN.p[k]]) { achou = true; break; }
         if (!achou) continue;
       }
-      idx.push(ci);
+      base.push(ci);
     }
+    const cI = {}, cV = {};
+    for (const ci of base) { const fi = faixaItens(cNc[ci]), fv = faixaValor(cPago[ci]); cI[fi] = (cI[fi] || 0) + 1; cV[fv] = (cV[fv] || 0) + 1; }
+    const idx = base.filter(ci => (!f.itB.size || f.itB.has(faixaItens(cNc[ci]))) && (!f.vaB.size || f.vaB.has(faixaValor(cPago[ci]))));
+    pintaFaixas(cI, cV);
+    wrapT.scrollTop = 0;
+    resumoF.textContent = n0.format(idx.length) + " cupons na tabela";
     const dif = ci => cConc[ci] - cPago[ci], val = ci => cPago[ci];
     const cmp = {eco: (a, b) => dif(b) - dif(a), pior: (a, b) => dif(a) - dif(b), valor: (a, b) => val(b) - val(a), cupom: (a, b) => a - b};
     idx.sort(cmp[f.ordem]);
@@ -400,12 +539,34 @@ MONTA.sim = () => {
       kpi("Cupons com Mateus mais barato (+)", pct(idx.length ? com / idx.length : null), n0.format(com) + " cupons · " + n0.format(sem) + " com Mateus mais caro (−)"),
       kpi("Por item", h("span", null, h("span", {class: "good"}, sinal(tp)), " / ", h("span", {class: "bad"}, sinal(tn))), "soma dos itens positivos / negativos"));
     render();
+    if (hookCat) hookCat();
+  }
+
+  // categoria → produtos, sobre os cupons filtrados (itens comparados): usado na tabela do Resumo
+  function dadosCat() {
+    const cats = new Array(CATS.length).fill(null);
+    for (const ci of S.idx) for (let k = LI[ci], e = LI[ci + 1]; k < e; k++) {
+      if (avalia(k) !== 0) continue;
+      const pi = LN.p[k], c = PCAT[pi], q = LN.q[k], v = LN.v[k] / 100, cc = rPc * q;
+      let g = cats[c];
+      if (!g) g = cats[c] = {c, pago: 0, conc: 0, ncup: 0, ult: -1, pm: new Map()};
+      g.pago += v; g.conc += cc;
+      if (g.ult !== ci) { g.ult = ci; g.ncup++; }
+      let pr = g.pm.get(pi);
+      if (!pr) g.pm.set(pi, pr = {pi, q: 0, pago: 0, conc: 0, ncup: 0, ult: -1, cn: rCc >= 0 ? D.concs[rCc] : "", dt: rDt});
+      pr.q += q; pr.pago += v; pr.conc += cc;
+      if (pr.ult !== ci) { pr.ult = ci; pr.ncup++; }
+    }
+    return cats.filter(Boolean).map(g => ({c: g.c, pago: g.pago, conc: g.conc, ncup: g.ncup, prods: [...g.pm.values()]}));
   }
 
   function expandir() {
     const topo = S.idx.slice(0, limite);
-    if (f.grupo === "dia") for (const g of grupos(topo)) { aberto.add("d:" + g.d); for (const ci of g.cs) aberto.add("c:" + ci); }
-    else for (const ci of topo) aberto.add("c:" + ci);
+    const cupons = f.grupo === "dia" ? grupos(topo).flatMap(g => { aberto.add("d:" + g.d); return g.cs; }) : topo;
+    for (const ci of cupons) {
+      aberto.add("c:" + ci);
+      if (f.grupo !== "cup") for (let k = LI[ci], e = LI[ci + 1]; k < e; k++) if (avalia(k) === 0) aberto.add("c:" + ci + "#" + PCAT[LN.p[k]]);
+    }
     render();
   }
 
@@ -433,20 +594,33 @@ MONTA.sim = () => {
   }
 
   function linhasCupom(ci, nivel, tb) {
-    const valor = S.val(ci), dif = S.dif(ci), cob = S.cPago[ci] / (CP.v[ci] / 100);
-    tb.append(linha(nivel, "c:" + ci, "Cupom " + CP.id[ci] + " · " + D.dias[CP.d[ci]] + " · PDV " + CP.pdv[ci], S.cNc[ci] + (S.cNc[ci] === 1 ? " item" : " itens"), null, null, "", "",
+    const valor = S.val(ci), dif = S.dif(ci), n = S.cNc[ci], cob = valor / (CP.v[ci] / 100), chave = "c:" + ci;
+    tb.append(linha(nivel, chave, "Cupom " + CP.id[ci] + " · " + D.dias[CP.d[ci]] + " · PDV " + CP.pdv[ci], n + (n === 1 ? " item" : " itens"), null, null, "", "",
       brl.format(valor), brl.format(valor + dif), dif, valor ? dif / valor : null, tag("cobertura " + pct(cob, 0), cob >= 0.8 ? "ok" : "mut"), "g" + (nivel ? 1 : 0)));
-    if (!aberto.has("c:" + ci)) return;
+    if (!aberto.has(chave)) return;
     const it = [];
     for (let k = LI[ci], e = LI[ci + 1]; k < e; k++) {
       if (avalia(k) !== 0) continue;                      // sem pesquisa / pesquisa em branco: o produto não entra no cupom
       const p = P[LN.p[k]], q = LN.q[k], v = LN.v[k] / 100, conc = rPc * q;
-      it.push({nome: p.id + " · " + p.nome, q, pu: v / q, v, pc: rPc, conc, eco: conc - v, at: rAt, cn: rCc >= 0 ? D.concs[rCc] : "", dt: rDt});
+      it.push({nome: p.id + " · " + p.nome, q, pu: v / q, v, pc: rPc, conc, eco: conc - v, at: rAt, cn: rCc >= 0 ? D.concs[rCc] : "", dt: rDt, cat: PCAT[LN.p[k]]});
     }
-    it.sort((a, b) => b.eco - a.eco);
+    const itemTr = (o, nv) => tb.append(linha(nv, null, o.nome, qtdf(o.q), n2.format(o.pu), n2.format(o.pc), o.cn, o.dt, brl.format(o.v), brl.format(o.conc), o.eco,
+      o.v ? o.eco / o.v : null, tag(o.at ? "atacado" : "varejo", "mut"), "it"));
+    if (f.grupo === "cup") { it.sort((a, b) => b.eco - a.eco); for (const o of it) itemTr(o, nivel + 1); return; }
+    // Cupom → Categoria → Produtos
+    const gm = new Map();
     for (const o of it) {
-      tb.append(linha(nivel + 1, null, o.nome, qtdf(o.q), n2.format(o.pu), n2.format(o.pc), o.cn, o.dt, brl.format(o.v), brl.format(o.conc), o.eco,
-        o.v ? o.eco / o.v : null, tag(o.at ? "atacado" : "varejo", "mut"), "it"));
+      let g = gm.get(o.cat);
+      if (!g) gm.set(o.cat, g = {c: o.cat, pago: 0, conc: 0, its: []});
+      g.pago += o.v; g.conc += o.conc; g.its.push(o);
+    }
+    const ord = {eco: (a, b) => (b.conc - b.pago) - (a.conc - a.pago), pior: (a, b) => (a.conc - a.pago) - (b.conc - b.pago), valor: (a, b) => b.pago - a.pago,
+      cupom: (a, b) => CATS[a.c].localeCompare(CATS[b.c], "pt-BR")};
+    for (const g of [...gm.values()].sort(ord[f.ordem])) {
+      const ck = chave + "#" + g.c, d = g.conc - g.pago;
+      tb.append(linha(nivel + 1, ck, CATS[g.c], g.its.length + (g.its.length === 1 ? " item" : " itens"), null, null, "", "",
+        brl.format(g.pago), brl.format(g.conc), d, g.pago ? d / g.pago : null, "", "gc"));
+      if (aberto.has(ck)) { g.its.sort((a, b) => b.eco - a.eco); for (const o of g.its) itemTr(o, nivel + 2); }
     }
   }
 
@@ -456,9 +630,9 @@ MONTA.sim = () => {
     const th = h("tr", null, cab.map((c, i) => h("th", {class: [1, 2, 3, 6, 7, 8, 9].includes(i) ? "r" : ""}, c)));
     let mostrados = 0;
     if (!idx.length) tb.append(h("tr", null, h("td", {colspan: cab.length, class: "empty"}, "Nenhum cupom com os filtros atuais.")));
-    else if (f.grupo === "cup") {
+    else if (f.grupo !== "dia") {
       for (const ci of idx.slice(0, limite)) { linhasCupom(ci, 0, tb); mostrados++; }
-    } else {
+    } else if (f.grupo === "dia") {
       const gs = grupos(idx);
       for (const g of gs.slice(0, limite)) {
         mostrados++;
@@ -466,17 +640,84 @@ MONTA.sim = () => {
         if (aberto.has("d:" + g.d)) for (const ci of g.cs.slice(0, limite)) linhasCupom(ci, 1, tb);
       }
     }
-    const total = f.grupo === "cup" ? idx.length : grupos(idx).length;
-    const mais = total > limite ? h("div", {class: "note"}, "Mostrando " + n0.format(mostrados) + " de " + n0.format(total) + (f.grupo === "cup" ? " cupons" : " dias") + ". ",
+    const total = f.grupo !== "dia" ? idx.length : grupos(idx).length;
+    const mais = total > limite ? h("div", {class: "note"}, "Mostrando " + n0.format(mostrados) + " de " + n0.format(total) + (f.grupo !== "dia" ? " cupons" : " dias") + ". ",
       h("button", {class: "chip", type: "button", onclick: () => { limite += 100; render(); }}, "Mostrar mais 100")) : null;
     const T = S.tot, tf = h("tfoot", null, linha(0, null, "TOTAL GERAL · " + n0.format(T.n) + " cupons", n0.format(T.nitC) + " itens", null, null, "", "",
       brl.format(T.tv), brl.format(T.tv + T.td), T.td, T.tv ? T.td / T.tv : null, tag("cobertura " + pct(T.full ? T.tv / T.full : null, 0), "mut"), "tot"));
-    tw.replaceChildren(card("Cupom → Produtos", "Clique numa linha para abrir o cupom e ver item a item. Ordenado conforme o filtro “Ordenar por”.",
-      [h("div", {class: "tw big"}, h("table", {class: "t"}, h("thead", null, th), tb, tf)), mais]));
+    const st = wrapT.scrollTop, sl = wrapT.scrollLeft;          // mantém a posição ao expandir/recolher
+    wrapT.replaceChildren(h("table", {class: "t"}, h("thead", null, th), tb, tf));
+    wrapT.scrollTop = st; wrapT.scrollLeft = sl;
+    maisT.replaceChildren(...(mais ? [mais] : []));
   }
   draw();
 };
 
+
+// ================= RESUMO: CATEGORIA → PRODUTOS (tabela dinâmica de preços) =================
+MONTA.cat = () => {
+  if (!feito.sim) { feito.sim = true; MONTA.sim(); }
+  const pg = $("#p-cat"), aberto = new Set(), fc = {ordem: "eco", q: ""};
+  let limite = 100, dados = [];
+  const sinal = v => (v > 0.005 ? "+" : v < -0.005 ? "−" : "") + brl.format(Math.abs(v));
+  const cls = v => v > 0.005 ? "good" : v < -0.005 ? "bad" : "";
+  const qtdf = q => q % 1 ? q.toLocaleString("pt-BR", {maximumFractionDigits: 3}) : n0.format(q);
+  const wrap = h("div", {class: "tw big"}), maisC = h("div"), info = h("span", {class: "note"});
+  const qin = h("input", {type: "search", placeholder: "Buscar categoria ou produto…", oninput: () => { fc.q = qin.value.trim().toLowerCase(); limite = 100; render(); }});
+  const seta = (txt, dica, onclick) => h("button", {class: "chip ib", type: "button", title: dica, "aria-label": dica, onclick}, txt);
+  const ordSel = sel("Ordenar por", [["eco", "Maior economia (+)"], ["pior", "Pior resultado (−)"], ["valor", "Maior venda"], ["nome", "A → Z"]], v => { fc.ordem = v; render(); });
+  const cel = (t, r) => h("td", {class: r ? "r" : ""}, t);
+
+  function tr(nivel, chave, rot, cupons, qtd, pu, puc, cn, dt, pago, conc, cl) {
+    const d = conc - pago;
+    const tg = h("span", {class: "tg"}, chave ? (aberto.has(chave) ? "▼" : "▶") : "");
+    const r = h("tr", {class: cl + (chave ? " clk" : "")},
+      h("td", {style: "padding-left:" + (12 + nivel * 20) + "px"}, tg, rot),
+      cel(cupons == null ? "" : n0.format(cupons), 1), cel(qtd, 1), cel(pu, 1), cel(puc, 1), cel(cn, 0), cel(dt, 0),
+      cel(brl.format(pago), 1), cel(brl.format(conc), 1), cel(h("span", {class: cls(d)}, sinal(d)), 1), cel(h("span", {class: cls(d)}, pago ? pct(d / pago) : "–"), 1));
+    if (chave) r.addEventListener("click", () => { if (aberto.has(chave)) aberto.delete(chave); else aberto.add(chave); render(); });
+    return r;
+  }
+
+  function render() {
+    const q = fc.q, cmp = {eco: (a, b) => (b.conc - b.pago) - (a.conc - a.pago), pior: (a, b) => (a.conc - a.pago) - (b.conc - b.pago), valor: (a, b) => b.pago - a.pago};
+    const nomeProd = pr => P[pr.pi].id + " · " + P[pr.pi].nome;
+    let cats = dados.map(g => ({...g, nome: CATS[g.c]}));
+    if (q) cats = cats.map(g => {
+      const catOk = g.nome.toLowerCase().includes(q);
+      const prods = catOk ? g.prods : g.prods.filter(pr => nomeProd(pr).toLowerCase().includes(q));
+      return prods.length ? {...g, prods} : null;
+    }).filter(Boolean);
+    cats.sort(fc.ordem === "nome" ? (a, b) => a.nome.localeCompare(b.nome, "pt-BR") : cmp[fc.ordem]);
+    const tb = h("tbody");
+    for (const g of cats.slice(0, limite)) {
+      tb.append(tr(0, "k:" + g.c, g.nome, g.ncup, n0.format(g.prods.length) + (g.prods.length === 1 ? " produto" : " produtos"), "", "", "", "", g.pago, g.conc, "g0"));
+      if (!aberto.has("k:" + g.c)) continue;
+      const ps = g.prods.slice().sort(fc.ordem === "nome" ? (a, b) => nomeProd(a).localeCompare(nomeProd(b), "pt-BR") : cmp[fc.ordem]);
+      for (const pr of ps.slice(0, 200)) tb.append(tr(1, null, nomeProd(pr), pr.ncup, qtdf(pr.q), n2.format(pr.pago / pr.q), n2.format(pr.conc / pr.q), pr.cn, pr.dt, pr.pago, pr.conc, "it"));
+      if (ps.length > 200) tb.append(h("tr", null, h("td", {colspan: 11, class: "empty"}, "Mostrando 200 de " + n0.format(ps.length) + " produtos desta categoria. Use a busca para localizar um produto.")));
+    }
+    const tp = dados.reduce((s2, g) => s2 + g.pago, 0), tcn = dados.reduce((s2, g) => s2 + g.conc, 0);
+    const tf = h("tfoot", null, tr(0, null, "TOTAL GERAL · " + n0.format(dados.length) + " categorias", null, "", "", "", "", "", tp, tcn, "tot"));
+    const cab = ["Categoria / Produto", "Cupons", "Qtd", "Preço unit. Mateus", "Preço unit. concorrente", "Concorrente", "Data da pesquisa", "Nossa venda", "Venda no concorrente", "Economia (R$)", "%"];
+    const st = wrap.scrollTop, sl = wrap.scrollLeft;
+    wrap.replaceChildren(h("table", {class: "t"}, h("thead", null, h("tr", null, cab.map((c, i) => h("th", {class: [1, 2, 3, 4, 7, 8, 9, 10].includes(i) ? "r" : ""}, c)))), tb, tf));
+    wrap.scrollTop = st; wrap.scrollLeft = sl;
+    info.textContent = n0.format(cats.length) + " categorias";
+    maisC.replaceChildren(...(cats.length > limite ? [h("div", {class: "note"}, "Mostrando " + n0.format(limite) + " de " + n0.format(cats.length) + " categorias. ",
+      h("button", {class: "chip", type: "button", onclick: () => { limite += 100; render(); }}, "Mostrar mais 100"))] : []));
+    wrap._cats = cats;
+  }
+
+  const barra = h("div", {class: "barra"},
+    h("button", {class: "chip hb", type: "button", "aria-label": "Abrir menu de filtros", onclick: () => menuFn && menuFn(true)}, h("span", {class: "hamb"}), "Filtros"),
+    seta("▼", "Expandir tudo", () => { for (const g of (wrap._cats || []).slice(0, limite)) aberto.add("k:" + g.c); render(); }),
+    seta("▲", "Recolher tudo", () => { aberto.clear(); render(); }), info);
+  pg.append(h("div", {class: "grid"}, card("Categoria → Produtos", "Preços, concorrente e data da pesquisa por categoria. Acompanha os filtros da Tabela dinâmica (concorrentes, preço do mercado, dia, PDV, faixas e categorias). Economia (R$) = venda no concorrente − nossa venda: positivo (+) = Mateus mais barato; negativo (−) = Mateus mais caro.",
+    [h("div", {class: "filters"}, ordSel.el, h("div", {class: "fg"}, h("label", null, "Busca"), qin)), barra, wrap, maisC])));
+  hookCat = () => { dados = dadosCatFn(); render(); };
+  hookCat();
+};
 
 abrir(ABAS.some(a => a[0] === location.hash.slice(1)) ? location.hash.slice(1) : "sim");
 </script>
