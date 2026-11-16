@@ -2,6 +2,6 @@
 # Regerar:  pip-compile --generate-hashes --allow-unsafe -o requirements-dev.txt requirements-dev.in
 -c requirements.txt
 pytest>=8
-ruff>=0.6
+ruff>=0.17.5
 bandit>=1.7
 pip-audit>=2.7
