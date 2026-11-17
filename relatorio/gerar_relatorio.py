@@ -26,6 +26,8 @@ CSV_CUPONS = BASE / "cupom gabriel.csv"       # id_filial, dia, id_cupom, codigo
 CSV_PRODUTOS = BASE / "produtos.csv"          # id_produto, produto, setor, categoria (do dim_produto do modelo)
 CSV_PESQ = BASE / "1067 - Filial Mix.csv"
 SAIDA = AQUI / "Relatorio Loja 20.html"
+SAIDA_LEVE = AQUI / "Relatorio Loja 20 (leve).html"   # sem os dados das filiais (vão em partes cifradas)
+PARTES = AQUI / "partes"                               # uma parte JSON por filial (local, fora do Git)
 FILIAL_MODELO = 20                            # o Power BI (validacao_modelo.json) só tem a Loja 20
 
 # Alto giro (proporcional ao período, por filial): vendeu em pelo menos metade dos dias E em pelo menos 0,1% dos cupons.
@@ -237,33 +239,61 @@ def main() -> None:
     def r(x, n):
         return None if pd.isna(x) else round(float(x), n)
 
-    pares_js = [[int(a.pk), int(a.cupons), int(a.dias), _num(round(float(a.unid), 3)), round(float(a.valor), 2), int(a.fora), int(a.alto),
-                 r(a.pdv_var, 4), r(a.pdv_atac, 4), r(a.custo, 2)] for a in g.itertuples()]
-    dados = {"gerado": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"), "cfg": {"pct_dias": PCT_DIAS, "pct_cupons": PCT_CUPONS},
-             "perfil": perfil, "validacao": validacao, "visao": visao, "filiais": fil_info, "concs": concs, "tipos": tipos,
-             "datas": [f"{pd.Timestamp(d):%d/%m/%Y}" for d in datas],
-             "produtos": [[int(i), n, s, ct] for i, n, s, ct in zip(prod_ids, nome, setor, categ)], "pares": pares_js,
-             "dias": [f"{d:%d/%m}" for d in dias],
-             "bin": {
-                 # linhas de venda (agrupadas por cupom): par, quantidade (milésimos), valor (centavos), tabela atacado
-                 "lp": b64(Lk["pk"], "<u4"), "lq": b64(np.rint(Lk["QTD"].to_numpy() * 1000), "<i4"),
-                 "lv": b64(np.rint(Lk["Vlr"].to_numpy() * 100), "<i4"), "lt": b64(Lk["tier"], "u1"),
-                 # cupons
-                 "ci": b64(cup["cupom"], "<u4"), "cf": b64(cup["fi"], "u1"), "cd": b64(cup["di"], "u1"), "cp": b64(cup["pdv"], "<u2"),
-                 "cv": b64(np.rint(cup["valor"].to_numpy() * 100), "<u4"), "cn": b64(nl, "<u2"),
-                 # preço dos concorrentes por par
-                 "pk": b64(pc["pk"], "<u4"), "pc": b64(pc["ci"], "u1"), "pv": b64(pc["var"], "<f4"), "pa": b64(pc["atac"], "<f4"),
-                 "pt": b64(pc["ti"], "u1"), "pd": b64(pc["di"], "u1")}}
-    js = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    js = js.replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+    # Cada filial vira uma "parte" independente (cupons, linhas de venda, pares e preços dos concorrentes).
+    # No arquivo local todas as partes vão embutidas; na versão publicada cada parte é um arquivo cifrado
+    # baixado só quando a filial é marcada no filtro (o Cloudflare Pages limita 25 MB por arquivo).
+    cup_fi = cup["fi"].to_numpy()
+    cup_ini = np.searchsorted(cup_fi, np.arange(nf), side="left")
+    cup_fim = np.searchsorted(cup_fi, np.arange(nf), side="right")
+    lin_cum = np.concatenate([[0], np.cumsum(nl)])
+    pc_fi = (pc["pk"].to_numpy() // npd)
+    g_fi = g["fi"].to_numpy()
+    partes = []
+    for i in range(nf):
+        c0, c1 = int(cup_ini[i]), int(cup_fim[i])
+        l0, l1 = int(lin_cum[c0]), int(lin_cum[c1])
+        cu, li, pq = cup.iloc[c0:c1], Lk.iloc[l0:l1], pc[pc_fi == i]
+        gi = g[g_fi == i]
+        pares_js = [[int(a.pk), int(a.cupons), int(a.dias), _num(round(float(a.unid), 3)), round(float(a.valor), 2), int(a.fora), int(a.alto),
+                     r(a.pdv_var, 4), r(a.pdv_atac, 4), r(a.custo, 2)] for a in gi.itertuples()]
+        partes.append({"pares": pares_js, "bin": {
+            # linhas de venda (agrupadas por cupom): par, quantidade (milésimos), valor (centavos), tabela atacado
+            "lp": b64(li["pk"], "<u4"), "lq": b64(np.rint(li["QTD"].to_numpy() * 1000), "<i4"),
+            "lv": b64(np.rint(li["Vlr"].to_numpy() * 100), "<i4"), "lt": b64(li["tier"], "u1"),
+            # cupons
+            "ci": b64(cu["cupom"], "<u4"), "cf": b64(cu["fi"], "u1"), "cd": b64(cu["di"], "u1"), "cp": b64(cu["pdv"], "<u2"),
+            "cv": b64(np.rint(cu["valor"].to_numpy() * 100), "<u4"), "cn": b64(nl[c0:c1], "<u2"),
+            # preço dos concorrentes por par
+            "pk": b64(pq["pk"], "<u4"), "pc": b64(pq["ci"], "u1"), "pv": b64(pq["var"], "<f4"), "pa": b64(pq["atac"], "<f4"),
+            "pt": b64(pq["ti"], "u1"), "pd": b64(pq["di"], "u1")}})
+    base_d = {"gerado": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"), "cfg": {"pct_dias": PCT_DIAS, "pct_cupons": PCT_CUPONS},
+              "perfil": perfil, "validacao": validacao, "visao": visao, "filiais": fil_info, "concs": concs, "tipos": tipos,
+              "datas": [f"{pd.Timestamp(d):%d/%m/%Y}" for d in datas],
+              "produtos": [[int(i), n, s, ct] for i, n, s, ct in zip(prod_ids, nome, setor, categ)],
+              "dias": [f"{d:%d/%m}" for d in dias], "pdvs": sorted(int(x) for x in cup["pdv"].unique())}
 
-    tpl = (AQUI / "template.html").read_text(encoding="utf-8")
-    ini = tpl.index("<script>") + len("<script>")
-    fim = tpl.index("</script>", ini)
-    sha = base64.b64encode(hashlib.sha256(tpl[ini:fim].encode("utf-8")).digest()).decode()
-    csp = f"default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-{sha}'; img-src data:; base-uri 'none'; form-action 'none'"
-    html = tpl.replace("__CSP__", csp).replace("__DADOS__", js)
-    SAIDA.write_text(html, encoding="utf-8")
+    def gera_html(dados: dict, extra_csp: str = "") -> str:
+        js = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
+        js = js.replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+        tpl = (AQUI / "template.html").read_text(encoding="utf-8")
+        ini_ = tpl.index("<script>") + len("<script>")
+        fim_ = tpl.index("</script>", ini_)
+        sha = base64.b64encode(hashlib.sha256(tpl[ini_:fim_].encode("utf-8")).digest()).decode()
+        csp = (f"default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-{sha}'; img-src data:; "
+               f"base-uri 'none'; form-action 'none'{extra_csp}")
+        return tpl.replace("__CSP__", csp).replace("__DADOS__", js)
+
+    # arquivo local (tudo embutido, abre direto no navegador)
+    SAIDA.write_text(gera_html({**base_d, "lazy": False, "partes": partes}), encoding="utf-8")
+    # versão leve para publicar + partes em JSON (a cifra é feita pelo publicar.py)
+    PARTES.mkdir(exist_ok=True)
+    for f_ in PARTES.glob("*.json"):
+        f_.unlink()
+    for i, pt in enumerate(partes):
+        (PARTES / f"f{int(fils[i])}.json").write_text(json.dumps(pt, separators=(",", ":")), encoding="utf-8")
+    chunks = [f"d/f{int(x)}.bin" for x in fils]
+    SAIDA_LEVE.write_text(gera_html({**base_d, "lazy": True, "chunks": chunks}, "; connect-src 'self'"), encoding="utf-8")
+    print("leve:", SAIDA_LEVE, f"{SAIDA_LEVE.stat().st_size / 1024:.0f} KB")
     print("ok:", SAIDA, f"{SAIDA.stat().st_size / 1024:.0f} KB")
     print(f"filiais={nf} cupons={n_cupons} linhas={len(c)} linhas_no_site={len(Lk)} pares={len(g)} pares_pesquisa={len(pc)} produtos={npd} sem_cadastro={sem_cad}")
     for fi_ in fil_info:

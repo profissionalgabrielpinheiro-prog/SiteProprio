@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 ITERACOES = 600_000
 _AAD = b"loja20-relatorio-v1"
+_AAD_PARTE = b"loja20-parte-"
 
 _LOGIN = """<!doctype html>
 <html lang="pt-BR">
@@ -65,6 +66,7 @@ document.getElementById("f").addEventListener("submit",async e=>{
     const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(d.s),iterations:+d.n,hash:"SHA-256"},
       base,{name:"AES-GCM",length:256},false,["decrypt"]);
     const claro=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(d.i),additionalData:enc.encode("__AAD__")},key,b64(d.c));
+    window.__K=key; /* chave NAO extraivel: so serve para decifrar as partes (filiais) baixadas depois */
     const html=await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
     document.open(); document.write(html); document.close();
   }catch(_){
@@ -82,7 +84,7 @@ def _sha(texto: str) -> str:
     return "sha256-" + base64.b64encode(hashlib.sha256(texto.encode("utf-8")).digest()).decode("ascii")
 
 
-def _csp(html_original: str, login_sem_csp: str) -> str:
+def _csp(html_original: str, login_sem_csp: str, partes: bool = False) -> str:
     import re
     unico = lambda rx, s: re.findall(rx, s, re.S)  # noqa: E731
     sc_l = unico(r"<script[^>]*>(.*?)</script>", login_sem_csp)
@@ -98,13 +100,22 @@ def _csp(html_original: str, login_sem_csp: str) -> str:
         f"script-src '{_sha(sc_l[0])}' '{_sha(sc_o[0])}'",
         f"style-src-elem '{_sha(st_l[0])}' '{_sha(st_o[0])}'",
         "style-src-attr 'unsafe-inline'",
-        "img-src data:", "connect-src 'none'", "font-src 'none'", "frame-src 'none'", "worker-src 'none'",
+        "img-src data:", "connect-src 'self'" if partes else "connect-src 'none'", "font-src 'none'", "frame-src 'none'", "worker-src 'none'",
         "media-src 'none'", "manifest-src 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'",
     ])
 
 
 def proteger(html: str, usuario: str, senha: str) -> str:
     """Devolve a página de login com `html` cifrado dentro."""
+    return proteger_com_partes(html, usuario, senha, {})[0]
+
+
+def proteger_com_partes(html: str, usuario: str, senha: str, partes: dict) -> tuple:
+    """Como `proteger`, e cifra também cada parte (nome -> bytes) com a MESMA chave.
+
+    Cada parte vira `iv(12 bytes) + AES-GCM(gzip(bytes))`, com o nome da parte como dado autenticado:
+    uma parte não pode ser trocada por outra. Devolve (pagina_de_login, {nome: bytes_cifrados}).
+    """
     if len(senha) < 8 or not usuario.strip():
         raise ValueError("Usuário vazio ou senha com menos de 8 caracteres.")
     sal, iv = os.urandom(16), os.urandom(12)
@@ -112,16 +123,36 @@ def proteger(html: str, usuario: str, senha: str) -> str:
     # comprime antes de cifrar (depois de cifrado não comprime mais): o relatório tem ~1 milhão de linhas
     cifra = AESGCM(chave).encrypt(iv, gzip.compress(html.encode("utf-8"), 9, mtime=0), _AAD)
     b = lambda x: base64.b64encode(x).decode("ascii")  # noqa: E731
+    blobs = {}
+    for nome, dados in partes.items():
+        iv_p = os.urandom(12)
+        blobs[nome] = iv_p + AESGCM(chave).encrypt(iv_p, gzip.compress(dados, 9, mtime=0), _AAD_PARTE + nome.encode("utf-8"))
     login = (_LOGIN.replace("__AAD__", _AAD.decode()).replace("__SAL__", b(sal)).replace("__IV__", b(iv))
              .replace("__ITER__", str(ITERACOES)).replace("__CIFRA__", b(cifra)))
-    return login.replace("__CSP__", _csp(html, login.replace("__CSP__", "")), 1)
+    return login.replace("__CSP__", _csp(html, login.replace("__CSP__", ""), bool(partes)), 1), blobs
 
 
-def publicar(html_path: Path, destino: Path, usuario: str, senha: str) -> Path:
-    """Lê o site gerado, cifra e grava `destino/index.html` (+ _headers do Cloudflare Pages)."""
+def publicar(html_path: Path, destino: Path, usuario: str, senha: str, partes_dir: Path | None = None) -> Path:
+    """Lê o site gerado, cifra e grava `destino/index.html` (+ `d/*.bin` das partes e _headers do Cloudflare Pages).
+
+    `partes_dir`: pasta com um JSON por filial (`f20.json`...). Cada um vira `d/f20.bin`, cifrado com a mesma chave.
+    """
     destino.mkdir(parents=True, exist_ok=True)
+    partes = {}
+    if partes_dir is not None:
+        for arq in sorted(Path(partes_dir).glob("*.json")):
+            partes[f"d/{arq.stem}.bin"] = arq.read_bytes()
+    pasta_d = destino / "d"
+    if pasta_d.exists():                                        # não deixa sobrar parte de uma publicação anterior
+        for velho in pasta_d.glob("*.bin"):
+            velho.unlink()
+    pagina, blobs = proteger_com_partes(Path(html_path).read_text(encoding="utf-8"), usuario, senha, partes)
     saida = destino / "index.html"
-    saida.write_text(proteger(Path(html_path).read_text(encoding="utf-8"), usuario, senha), encoding="utf-8")
+    saida.write_text(pagina, encoding="utf-8")
+    if blobs:
+        pasta_d.mkdir(exist_ok=True)
+        for nome, b in blobs.items():
+            (destino / nome).write_bytes(b)
     (destino / "_headers").write_text(
         "/*\n  X-Frame-Options: DENY\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n"
         "  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n", encoding="utf-8")

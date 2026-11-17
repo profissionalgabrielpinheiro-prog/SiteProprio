@@ -223,23 +223,19 @@ function busca(onch) {
 // O "produto" do simulador é o par (filial, produto): cada filial tem o seu preço de PDV e a sua pesquisa de concorrentes.
 // índice do par = filial * NPR + produto. Colunas grandes (linhas, cupons, preços de concorrentes) vêm em binário (base64).
 function dec(s, T) { const bin = atob(s), n = bin.length, u = new Uint8Array(n); for (let i = 0; i < n; i++) u[i] = bin.charCodeAt(i); return new T(u.buffer); }
-const FILS = D.filiais, NF = FILS.length, PROD = D.produtos, NPR = PROD.length, B = D.bin;
+const FILS = D.filiais, NF = FILS.length, PROD = D.produtos, NPR = PROD.length;
 const P = new Array(NF * NPR);
 for (let f = 0; f < NF; f++) for (let i = 0; i < NPR; i++) {
   const a = PROD[i];
   P[f * NPR + i] = {id: a[0], nome: a[1], setor: a[2], cat: a[3], f, cupons: 0, dias: 0, unid: 0, valor: 0, fora: 1, alto: 0, pdvVar: null, pdvAtac: null, custo: null};
 }
-for (const a of D.pares) { const p = P[a[0]]; p.cupons = a[1]; p.dias = a[2]; p.unid = a[3]; p.valor = a[4]; p.fora = a[5]; p.alto = a[6]; p.pdvVar = a[7]; p.pdvAtac = a[8]; p.custo = a[9]; }
 const NC = D.concs.length;
 const PC = P.map(() => []);
 const CATS = [...new Set(PROD.map(a => a[3]))].sort((a, b) => a.localeCompare(b, "pt-BR"));
 const catDe = Int16Array.from(PROD, a => CATS.indexOf(a[3]));
 const PCAT = new Int16Array(NF * NPR);
 for (let i = 0; i < PCAT.length; i++) PCAT[i] = catDe[i % NPR];
-{
-  const pk = dec(B.pk, Uint32Array), pc = dec(B.pc, Uint8Array), pv = dec(B.pv, Float32Array), pa = dec(B.pa, Float32Array), pt = dec(B.pt, Uint8Array), pd = dec(B.pd, Uint8Array);
-  for (let i = 0; i < pk.length; i++) PC[pk[i]].push({c: pc[i], v: Math.round(pv[i] * 1e4) / 1e4, a: Math.round(pa[i] * 1e4) / 1e4, t: pt[i], dt: D.datas[pd[i]]});
-}
+const PV = new Float64Array(NF * NPR).fill(NaN);        // preço PDV (varejo) de cada par; preenchido ao carregar a filial
 // Moda dos preços (arredondados em centavos); empate = menor preço; sem repetição = mediana.
 function moda(vs) {
   const m = new Map();
@@ -274,13 +270,54 @@ function refMercado(i, ok, crit, compat) {
 }
 const CRITERIOS = [["moda", "Moda do mercado (preço mais comum)"], ["min", "Menor preço entre os concorrentes"]];
 // linhas de venda em colunas (p = par filial×produto, q = quantidade, v = centavos, t = tabela atacado); agrupadas por cupom
-const CP = {id: dec(B.ci, Uint32Array), f: dec(B.cf, Uint8Array), d: dec(B.cd, Uint8Array), pdv: dec(B.cp, Uint16Array), v: dec(B.cv, Uint32Array), n: dec(B.cn, Uint16Array)};
-const LN = {p: dec(B.lp, Uint32Array), q: Float64Array.from(dec(B.lq, Int32Array), x => x / 1000), v: dec(B.lv, Int32Array), t: dec(B.lt, Uint8Array)};
-const NCUP = CP.id.length;
-D.bin = null; document.getElementById("dados").textContent = "";
+let CP = {id: new Uint32Array(0), f: new Uint8Array(0), d: new Uint8Array(0), pdv: new Uint16Array(0), v: new Uint32Array(0), n: new Uint16Array(0)};
+let LN = {p: new Uint32Array(0), q: new Float64Array(0), v: new Int32Array(0), t: new Uint8Array(0)};
+let NCUP = 0, LI = new Int32Array(1), versaoDados = 0;
+const PARTES = new Array(NF).fill(null), CARREGADO = new Array(NF).fill(false);
 const rotCupom = ci => "Cupom " + CP.id[ci] + " · " + D.dias[CP.d[ci]] + " · " + FILS[CP.f[ci]].curto + " · PDV " + CP.pdv[ci];
-const LI = new Int32Array(NCUP + 1);
-for (let i = 0; i < NCUP; i++) LI[i + 1] = LI[i] + CP.n[i];
+// guarda os dados de uma filial (pares, preços de concorrentes, cupons e linhas)
+function aplicaParte(fi, parte) {
+  const B = parte.bin;
+  for (const a of parte.pares) {
+    const p = P[a[0]]; p.cupons = a[1]; p.dias = a[2]; p.unid = a[3]; p.valor = a[4]; p.fora = a[5]; p.alto = a[6]; p.pdvVar = a[7]; p.pdvAtac = a[8]; p.custo = a[9];
+    PV[a[0]] = a[7] == null ? NaN : a[7];
+  }
+  const pk = dec(B.pk, Uint32Array), pc = dec(B.pc, Uint8Array), pv = dec(B.pv, Float32Array), pa = dec(B.pa, Float32Array), pt = dec(B.pt, Uint8Array), pd = dec(B.pd, Uint8Array);
+  for (let i = 0; i < pk.length; i++) PC[pk[i]].push({c: pc[i], v: Math.round(pv[i] * 1e4) / 1e4, a: Math.round(pa[i] * 1e4) / 1e4, t: pt[i], dt: D.datas[pd[i]]});
+  PARTES[fi] = {cp: {id: dec(B.ci, Uint32Array), f: dec(B.cf, Uint8Array), d: dec(B.cd, Uint8Array), pdv: dec(B.cp, Uint16Array), v: dec(B.cv, Uint32Array), n: dec(B.cn, Uint16Array)},
+    ln: {p: dec(B.lp, Uint32Array), q: Float64Array.from(dec(B.lq, Int32Array), x => x / 1000), v: dec(B.lv, Int32Array), t: dec(B.lt, Uint8Array)}};
+  CARREGADO[fi] = true;
+}
+// junta as filiais carregadas (na ordem das filiais) nas colunas globais usadas pelo simulador
+function montaGlobais() {
+  const ls = PARTES.filter(Boolean);
+  const junta = (arrs, T) => { let n = 0; for (const a of arrs) n += a.length; const o = new T(n); let k = 0; for (const a of arrs) { o.set(a, k); k += a.length; } return o; };
+  CP = {id: junta(ls.map(x => x.cp.id), Uint32Array), f: junta(ls.map(x => x.cp.f), Uint8Array), d: junta(ls.map(x => x.cp.d), Uint8Array),
+    pdv: junta(ls.map(x => x.cp.pdv), Uint16Array), v: junta(ls.map(x => x.cp.v), Uint32Array), n: junta(ls.map(x => x.cp.n), Uint16Array)};
+  LN = {p: junta(ls.map(x => x.ln.p), Uint32Array), q: junta(ls.map(x => x.ln.q), Float64Array), v: junta(ls.map(x => x.ln.v), Int32Array), t: junta(ls.map(x => x.ln.t), Uint8Array)};
+  NCUP = CP.id.length; LI = new Int32Array(NCUP + 1);
+  for (let i = 0; i < NCUP; i++) LI[i + 1] = LI[i] + CP.n[i];
+  versaoDados++;
+}
+// versão publicada: cada filial é um arquivo cifrado (AES-GCM + gzip) baixado sob demanda; a chave vem da tela de login
+const _pend = new Map();
+async function baixaParte(i) {
+  const u = D.chunks[i], r = await fetch(u, {cache: "no-store", credentials: "same-origin"});
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const b = new Uint8Array(await r.arrayBuffer());
+  if (!window.__K) throw new Error("sessão sem chave");
+  const claro = await crypto.subtle.decrypt({name: "AES-GCM", iv: b.slice(0, 12), additionalData: new TextEncoder().encode("loja20-parte-" + u)}, window.__K, b.slice(12));
+  const txt = await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  return JSON.parse(txt);
+}
+function garante(fis) {
+  return Promise.all(fis.filter(i => !CARREGADO[i]).map(i => {
+    if (!_pend.has(i)) _pend.set(i, baixaParte(i).then(pt => { aplicaParte(i, pt); _pend.delete(i); }, e => { _pend.delete(i); throw e; }));
+    return _pend.get(i);
+  }));
+}
+if (!D.lazy) { D.partes.forEach((pt, i) => aplicaParte(i, pt)); D.partes = null; montaGlobais(); }
+document.getElementById("dados").textContent = "";
 const match = (p, q) => !q || p.nome.toLowerCase().includes(q) || String(p.id).includes(q);
 
 $("#sub").textContent = D.perfil.cupons.loja + " · cupons de " + D.perfil.cupons.de + " a " + D.perfil.cupons.ate +
@@ -368,13 +405,14 @@ MONTA.perfil = () => {
 // ================= SIMULADOR: UMA TABELA DINÂMICA (cupom → produtos) =================
 MONTA.sim = () => {
   const pg = $("#p-sim");
-  const PV = Float64Array.from(P, p => p.pdvVar == null ? NaN : p.pdvVar);
   const sinal = v => (v > 0.005 ? "+" : v < -0.005 ? "−" : "") + brl.format(Math.abs(v));
   const cls = v => v > 0.005 ? "good" : v < -0.005 ? "bad" : "";
   const qtdf = q => q % 1 ? q.toLocaleString("pt-BR", {maximumFractionDigits: 3}) : n0.format(q);
-  const pdvs = [...new Set(CP.pdv)].sort((a, b) => a - b);
+  const pdvs = D.pdvs;
   const f = {conc: new Set(D.concs.map((_, i) => i)), tipo: new Set(D.tipos.map((_, i) => i)), crit: "moda", modo: "auto",
     compat: 50, desvio: 50, cob: 0, dia: "", pdv: "", q: "", grupo: "cc", ordem: "eco", ver: "todos", cats: new Set(), fil: new Set()};
+  const FIL_PAD = Math.max(0, FILS.findIndex(x => x.id === 20));
+  if (D.lazy) f.fil.add(FIL_PAD);                  // versão publicada: começa só com a Loja 20 (cada filial baixa ~5 MB)
   const aberto = new Set();
   let limite = 100, S = null;
   catCupFn = () => catCup(); itensCupFn = (ci, c) => itensCupCat(ci, c);
@@ -410,19 +448,28 @@ MONTA.sim = () => {
     const bs = [...new Set([...Object.keys(cV).map(Number), ...f.vaB])].sort((x, y) => x - y);
     boxValor.replaceChildren(...bs.map(bk => caixa(rotValor(bk), cV[bk] || 0, f.vaB.has(bk), () => alterna(f.vaB, bk))));
   }
-  // filial: sem marcação = todas
-  const msgFil = "Sem marcação = todas as filiais.";
+  // filial: no arquivo local, sem marcação = todas; na versão publicada, ao menos uma (cada uma é baixada sob demanda)
+  const msgFil = D.lazy ? "Cada filial marcada é baixada uma vez (cerca de 5 MB)." : "Sem marcação = todas as filiais.";
   const infoFil = h("p", {class: "note"}, msgFil), boxFil = h("div", {class: "fx"});
+  const textoFil = () => f.fil.size ? n0.format(f.fil.size) + " filial(is) marcada(s)" : msgFil;
   const filLabels = FILS.map((fl, i) => {
     const inp = h("input", {type: "checkbox", onchange: () => {
       if (inp.checked) f.fil.add(i); else f.fil.delete(i);
-      infoFil.textContent = f.fil.size ? n0.format(f.fil.size) + " filial(is) marcada(s)" : msgFil;
+      if (D.lazy && !f.fil.size) { f.fil.add(FIL_PAD); filLabels[FIL_PAD].cb.checked = true; }
+      infoFil.textContent = textoFil();
       limite = 100; draw();
     }});
+    inp.checked = f.fil.has(i);
     const l = h("label", null, inp, h("span", null, fl.curto), h("span", {class: "n"}, n0.format(fl.cupons))); l.cb = inp; return l;
   });
   boxFil.append(...filLabels);
-  const limpaFil = () => { f.fil.clear(); for (const l of filLabels) l.cb.checked = false; infoFil.textContent = msgFil; limite = 100; draw(); };
+  infoFil.textContent = textoFil();
+  const marcaFil = (todas) => {
+    f.fil.clear();
+    if (todas) FILS.forEach((_, i) => f.fil.add(i)); else if (D.lazy) f.fil.add(FIL_PAD);
+    filLabels.forEach((l, i) => { l.cb.checked = f.fil.has(i); });
+    infoFil.textContent = textoFil(); limite = 100; draw();
+  };
   // categoria (dim_produto): lista com busca; sem marcação = todas
   const msgCat = "Sem marcação = todas as categorias.";
   const infoCat = h("p", {class: "note"}, msgCat), boxCat = h("div", {class: "fx rol"});
@@ -447,7 +494,7 @@ MONTA.sim = () => {
   const campo = (rot, ...c) => h("div", {class: "fg"}, h("label", null, rot), ...c);
   const aside = h("aside", {class: "drawer", role: "dialog", "aria-label": "Menu de filtros"},
     h("div", {class: "fechar"}, h("button", {type: "button", onclick: () => menu(false)}, "Fechar Menu ", h("span", null, "›"))),
-    grupo("Filial", infoFil, boxFil, h("button", {class: "chip", type: "button", onclick: limpaFil}, "Limpar filiais")),
+    grupo("Filial", infoFil, boxFil, h("button", {class: "chip", type: "button", onclick: () => marcaFil(false)}, D.lazy ? "Só a Loja 20" : "Limpar filiais"), D.lazy ? h("button", {class: "chip", type: "button", onclick: () => marcaFil(true)}, "Marcar todas") : null),
     grupo("Concorrentes e preço",
       chips("Concorrentes considerados", D.concs, f.conc, draw),
       chips("Tipo de preço do concorrente", D.tipos, f.tipo, draw),
@@ -525,7 +572,23 @@ MONTA.sim = () => {
     rPc = pc; rAt = at; rCc = at ? RCA[pi] : RCV[pi]; rDt = at ? RDA[pi] : RDV[pi]; return 0;
   }
 
-  function draw() {
+  let drawId = 0, versaoVista = -1;
+  async function draw() {
+    const eu = ++drawId;
+    const need = (f.fil.size ? [...f.fil] : FILS.map((_, i) => i)).filter(i => !CARREGADO[i]);
+    if (need.length) {
+      aviso.replaceChildren(h("div", {class: "alerta"}, "Carregando " + need.length + " filial(is)…"));
+      try { await garante(need); } catch (e) {
+        aviso.replaceChildren(h("div", {class: "alerta bad"}, "Não foi possível carregar os dados da filial (" + e.message + "). Recarregue a página e entre de novo."));
+        return;
+      }
+      if (eu !== drawId) return;
+      montaGlobais();
+    }
+    if (versaoVista !== versaoDados) { aberto.clear(); versaoVista = versaoDados; }
+    drawSync();
+  }
+  function drawSync() {
     const sig = [...f.conc].sort().join(",") + "|" + [...f.tipo].sort().join(",") + "|" + f.crit + "|" + f.compat;
     if (sig !== sigRef || !RV) {                                  // só recalcula o mercado quando os filtros de preço mudam
       RV = new Float64Array(P.length).fill(NaN); RA = new Float64Array(P.length).fill(NaN);
